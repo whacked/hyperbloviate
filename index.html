@@ -22,11 +22,23 @@
         <script type="text/javascript" src="node_modules/w2ui/w2ui.min.js"></script>
         <link rel="stylesheet" type="text/css" href="node_modules/w2ui/w2ui.min.css">
 
-        <script type="text/javascript" src="browser.js"></script>
+        <script type="text/javascript" src="node_modules/sibilant/lib/browser.js"></script>
 
+        <!-- compiled sibilant -->
+        <script type="text/javascript" src="dynamic.js"></script>
         <script type="sibilant">
-        (console.log "hello from sibilant")
+        (console.log "sibilant from browser")
         </script>
+
+
+        <!--
+        <webview
+            src="http://ddg.gg"
+            id="main-webview"
+            preload="file://./inject.js"
+             useragent="Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; AS; rv:11.0) like Gecko"
+            ></webview>
+        -->
 
         <!-- client side init -->
         <script type="text/javascript">
@@ -62,7 +74,8 @@
 
                 var aux = document.createElement("webview");
                 aux.useragent = user_agent;
-                // aux.src = "https://ddg.gg";
+                aux.src = "https://ddg.gg";
+                //var aux = document.getElementById("main-webview");
                 w2ui["main-layout"].content("preview", aux);
 
                 var control = document.createElement("div");
@@ -84,28 +97,36 @@
         <script type="text/javascript">
         require("nw.gui").Window.get().showDevTools();
 
-        wv = document.getElementById("main-webview");
+        function get_webview(wv_idx) {
+            wv_idx = wv_idx || 0;
+            var wvs = $("webview");
+            if(wvs.length == 0) {
+                return;
+            }
+            return wvs[wv_idx];
+        }
 
-        function execjs(js, cb) {
+        function execjs(wv, js, cb) {
+            if(!wv) { return; }
             wv.executeScript({code:js}, cb ? cb(res) : function(res){
                 console.log(res[0])
             });
         }
 
-        function get_webview_html() {
-            execjs("document.body.innerHTML");
+        function get_webview_html(wv_idx) {
+            execjs(get_webview(wv_idx), "document.body.innerHTML");
         }
 
-        function clear_webview_event_listeners() {
-            execjs("document.body.outerHTML = document.body.outerHTML");
+        function clear_webview_event_listeners(wv_idx) {
+            execjs(get_webview(wv_idx), "document.body.outerHTML = document.body.outerHTML");
         }
 
-        function attach_webview_event_listeners() {
-            execjs("document.body.addEventListener('click', function(evt) {console.log(evt)})");
+        function attach_webview_event_listeners(wv_idx) {
+            execjs(get_webview(wv_idx), "document.body.addEventListener('click', function(evt) {console.log(evt)})");
         }
 
-        function response_handler(obj, callback) {
-            console.log("GOT:");
+        function loopback_handler(obj, callback) {
+            console.log("%c GOT JAVASCRIPT ", "color:gray;background:gold;");
             console.log(obj);
             console.log('=============================');
             var rtn = eval(obj);
@@ -113,6 +134,14 @@
             callback(undefined, rtn);
         }
 
+        function sibilant_handler(obj, callback) {
+            console.log("%c GOT SIBLANT ", "color:maroon;background:black;");
+            console.log(obj);
+            console.log('=============================');
+            var rtn = eval(sibilant.sibilize(obj));
+            console.log('=============================');
+            callback(undefined, rtn);
+        }
 
         app = null;
         function start_server() {
@@ -127,12 +156,14 @@
             app = express();
             app.use(bodyParser.json());
             var jsonRpcMiddlewareServer = new Server(new ServerMiddleware(), {
-                loopback: response_handler
+                loopback: loopback_handler,
+                sibilant: sibilant_handler
             });
             app.use('/rpc', jsonRpcMiddlewareServer.transport.middleware);
             app.listen(8002);
             return app;
         }
+        start_server();
 
 
         </script>
