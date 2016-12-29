@@ -35,7 +35,9 @@
 
         <script type="text/javascript" src="node_modules/sibilant/lib/browser.js"></script>
 
-        <!-- compiled sibilant -->
+        <!-- compiled sibilant
+            sibilant compiled.sibilant -m -o .
+        -->
         <script type="text/javascript" src="compiled.js"></script>
         <script type="text/sibilant" src="dynamic.sibilant"></script>
         <script type="text/sibilant">
@@ -146,7 +148,6 @@
             callback(undefined, rtn);
         }
 
-        app = null;
         function start_server() {
             console.log("%c check panel! ", "color:lime;font-weight:bold;background:black;");
             var jsonrpc = require('multitransport-jsonrpc');
@@ -156,7 +157,7 @@
             var express = require('express');
             var bodyParser = require('body-parser');
                   
-            app = express();
+            var app = express();
             app.use(bodyParser.json());
             var jsonRpcMiddlewareServer = new Server(new ServerMiddleware(), {
                 javascript: javascript_handler,
@@ -166,7 +167,7 @@
             app.listen(8002);
             return app;
         }
-        start_server();
+        app = start_server();
 
 
         </script>
