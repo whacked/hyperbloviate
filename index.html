@@ -125,7 +125,7 @@
             execjs(get_webview(wv_idx), "document.body.addEventListener('click', function(evt) {console.log(evt)})");
         }
 
-        function loopback_handler(obj, callback) {
+        function javascript_handler(obj, callback) {
             console.log("%c GOT JAVASCRIPT ", "color:gray;background:gold;");
             console.log(obj);
             console.log('=============================');
@@ -156,7 +156,7 @@
             app = express();
             app.use(bodyParser.json());
             var jsonRpcMiddlewareServer = new Server(new ServerMiddleware(), {
-                loopback: loopback_handler,
+                javascript: javascript_handler,
                 sibilant: sibilant_handler
             });
             app.use('/rpc', jsonRpcMiddlewareServer.transport.middleware);
