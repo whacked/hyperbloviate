@@ -14,6 +14,17 @@
 
         <div id="main-container"></div>
 
+        <!-- server side libs -->
+        <script type="text/javascript">
+            var fs = require("fs"),
+                path = require("path"),
+                cheerio = require("cheerio"),
+                chokidar = require("chokidar"),
+                domutils = require("domutils"),
+                express = require("express");
+            // sibilant = require("");
+        </script>
+
         <!-- client side libs -->
         <script type="text/javascript" src="node_modules/jquery/dist/jquery.min.js"></script>
         <script type="text/javascript" src="node_modules/immutable/dist/immutable.min.js"></script>
@@ -25,20 +36,11 @@
         <script type="text/javascript" src="node_modules/sibilant/lib/browser.js"></script>
 
         <!-- compiled sibilant -->
-        <script type="text/javascript" src="dynamic.js"></script>
-        <script type="sibilant">
+        <script type="text/javascript" src="compiled.js"></script>
+        <script type="text/sibilant" src="dynamic.sibilant"></script>
+        <script type="text/sibilant">
         (console.log "sibilant from browser")
         </script>
-
-
-        <!--
-        <webview
-            src="http://ddg.gg"
-            id="main-webview"
-            preload="file://./inject.js"
-             useragent="Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; AS; rv:11.0) like Gecko"
-            ></webview>
-        -->
 
         <!-- client side init -->
         <script type="text/javascript">
@@ -50,10 +52,20 @@
             });
             */
             $(function() {
-
                 // sibilant preprocessor
-                $("script[type$=sibilant]").each(function(i, el) {
-                  eval(sibilant.sibilize(el.innerText));
+                $("script[type$='text/sibilant']").each(function(i, el) {
+                    if(el.src) {
+                        var filepath = el.src.substring(chrome.runtime.getURL("/").length);
+                        fs.readFile(filepath, "utf8", function(err, sibcode) {
+                            if(err) {
+                                console.error(err);
+                                return;
+                            }
+                            eval(sibilant.sibilize(sibcode));
+                        });
+                    } else {
+                        eval(sibilant.sibilize(el.innerText));
+                    }
                 });
 
                 var pstyle = "background-color: #F5F6F7; border: 1px solid #dfdfdf; padding: 5px;";
@@ -83,15 +95,6 @@
                 w2ui["main-layout"].content("right", control);
 
             });
-        </script>
-
-        <!-- server side libs -->
-        <script type="text/javascript">
-            var cheerio = require("cheerio");
-            var chokidar = require("chokidar");
-            var domutils = require("domutils");
-            var express = require("express");
-            // sibilant = require("");
         </script>
 
         <script type="text/javascript">
