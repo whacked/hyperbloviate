@@ -10,9 +10,20 @@
             width: 100%;
             height: 100%;
         }
+        webview {
+            width: 100%;
+            height: 100%;
+            display: none;
+        }
+        .to-inject {
+            display: none;
+        }
         </style>
 
         <div id="main-container"></div>
+        <div id="inject-container" class="to-inject">
+          <h1>injected dom element</h1>
+        </div>
 
         <!-- server side libs -->
         <script type="text/javascript">
@@ -30,8 +41,9 @@
         <script type="text/javascript" src="node_modules/immutable/dist/immutable.min.js"></script>
         <script type="text/javascript" src="node_modules/mithril/mithril.min.js"></script>
 
-        <script type="text/javascript" src="node_modules/w2ui/w2ui.min.js"></script>
-        <link rel="stylesheet" type="text/css" href="node_modules/w2ui/w2ui.min.css">
+        <script type="text/javascript" src="node_modules/golden-layout/dist/goldenlayout.min.js"></script>
+        <link type="text/css" rel="stylesheet" href="node_modules/golden-layout/src/css/goldenlayout-base.css" />
+        <link type="text/css" rel="stylesheet" href="node_modules/golden-layout/src/css/default-theme.css" />
 
         <script type="text/javascript" src="node_modules/sibilant/lib/browser.js"></script>
 
@@ -70,32 +82,51 @@
                     }
                 });
 
-                var pstyle = "background-color: #F5F6F7; border: 1px solid #dfdfdf; padding: 5px;";
-                $("#main-container").w2layout({
-                    name: "main-layout",
-                    panels: [
-                    { type: 'main', style: pstyle },
-                    { type: 'preview', size: '50%', resizable: true, style: pstyle },
-                    { type: 'right', size: '30%', resizable: true, style: pstyle },
-                    ]
-                });
+                var config = {
+                    content: [{
+                        type: 'row',
+                        content:[{
+                            type: 'column',
+                            content:[{
+                                type: 'component',
+                                componentName: 'regular-component',
+                                componentState: { label: 'regular component label' }
+                            },{
+                                type: 'component',
+                                componentName: 'dom-component',
+                                componentState: {  }
+                            }]
+                        },
+                                 {
+                                     type: 'component',
+                                     componentName: 'dom-id-component',
+                                     componentState: { id: "inject-container" }
+                                 }]
+                    }]
+                };
 
                 var user_agent = "Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; AS; rv:11.0) like Gecko";
-                var main = document.createElement("webview");
-                main.useragent = user_agent;
-                //main.src = "./main.html";
-                w2ui["main-layout"].content("main", main);
-
-                var aux = document.createElement("webview");
-                aux.useragent = user_agent;
-                aux.src = "https://ddg.gg";
-                //var aux = document.getElementById("main-webview");
-                w2ui["main-layout"].content("preview", aux);
 
                 var control = document.createElement("div");
                 control.innerHTML = "hello!";
-                w2ui["main-layout"].content("right", control);
 
+                var main_layout = new GoldenLayout(config, document.getElementById("main-container"));
+                main_layout.registerComponent("regular-component", function(container, componentState) {
+                    container.getElement().html('hello from ' + componentState.label);
+                });
+                main_layout.registerComponent("dom-component", function(container, componentState) {
+                    var aux = document.createElement("webview");
+                    aux.useragent = user_agent;
+                    aux.src = "https://ddg.gg";
+                    container.getElement().html(aux);
+                });
+                main_layout.registerComponent("dom-id-component", function(container, componentState) {
+                    container.getElement().html(document.getElementById(componentState.id));
+                });
+                main_layout.init();
+
+                $(".to-inject").show();
+                $("webview").show();
             });
         </script>
 
@@ -140,7 +171,7 @@
         }
 
         function sibilant_handler(obj, callback) {
-            console.log("%c GOT SIBLANT ", "color:maroon;background:black;");
+            console.log("%c GOT SIBLANT ", "color:red;background:black;");
             console.log(obj);
             console.log('=============================');
             var rtn = eval(sibilant.sibilize(obj));
@@ -148,7 +179,13 @@
             callback(undefined, rtn);
         }
 
+        var JRPC_PORT = 8002;
+
+        server = null;
         function start_server() {
+            if(server) {
+                return;
+            }
             console.log("%c check panel! ", "color:lime;font-weight:bold;background:black;");
             var jsonrpc = require('multitransport-jsonrpc');
             var Server = jsonrpc.server;
@@ -164,12 +201,12 @@
                 sibilant: sibilant_handler
             });
             app.use('/rpc', jsonRpcMiddlewareServer.transport.middleware);
-            app.listen(8002);
-            return app;
+            server = app.listen(JRPC_PORT);
         }
-        app = start_server();
 
-
+        function stop_server() {
+            server.close();
+        }
         </script>
     </body>
 </html>

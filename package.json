@@ -9,12 +9,12 @@
     "connect": "^3.5.0",
     "domutils": "^1.5.1",
     "express": "^4.14.0",
+    "golden-layout": "^1.5.6",
     "immutable": "^3.8.1",
     "jquery": "^3.1.1",
     "mithril": "^0.2.5",
     "multitransport-jsonrpc": "^0.9.4",
-    "sibilant": "^0.5.5",
-    "w2ui": "^1.4.3"
+    "sibilant": "^0.5.5"
   },
   "name": "drivable",
   "main": "index.html"
