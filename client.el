@@ -1,6 +1,7 @@
 (require 'json-rpc)
 
-(setf drivable/jrpc-handle (json-rpc-connect "localhost" 8002))
+(setq drivable/jrpc-port 8002)
+(setf drivable/jrpc-handle (json-rpc-connect "localhost" drivable/jrpc-port))
 (setq drivable/jrpc-endpoint "/rpc")
 (defun drivable/json-rpc-request (connection method &rest mixed-params)
   "Send request of METHOD to CONNECTION, returning result or signalling error."
@@ -29,3 +30,38 @@
 
 (defun drivable/eval-sibilant (sib)
   (drivable/json-rpc-request drivable/jrpc-handle "sibilant" (list sib)))
+
+;; include sibilant-skewer-mode first
+(defun sibilant-jsonrpc-send-region (beg end)
+  (let ((selected (buffer-substring beg end)))
+    (with-temp-buffer
+      (let ((tbuf (current-buffer)))
+        (insert sibilant-preamble)
+        (insert selected)
+        (call-process-region
+         (point-min) (point-max)
+         sibilant-program
+         t ;; delete = replace region with eval output
+         tbuf nil "--input")
+        (drivable/eval-sibilant (buffer-string))))))
+
+(defun sibilant-jsonrpc-eval-preceding-sexp ()
+  (interactive)
+  (save-excursion
+    (let ((beg (progn (beginning-of-sexp)
+                      (point)))
+          (end (progn (end-of-sexp)
+                      (point))))
+      (sibilant-jsonrpc-send-region beg end))))
+
+(defun sibilant-jsonrpc-eval-defun ()
+  (interactive)
+  (save-excursion
+    (let ((beg (progn (beginning-of-defun)
+                      (point)))
+          (end (progn (end-of-defun)
+                      (point))))
+      (sibilant-jsonrpc-send-region beg end))))
+
+(define-key sibilant-mode-map (kbd "C-x C-e") 'sibilant-jsonrpc-eval-preceding-sexp)
+(define-key sibilant-mode-map (kbd "C-M-x") 'sibilant-jsonrpc-eval-defun)
