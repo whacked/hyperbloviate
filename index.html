@@ -165,7 +165,7 @@
             console.log("%c GOT JAVASCRIPT ", "color:gray;background:gold;");
             console.log(obj);
             console.log('=============================');
-            var rtn = eval(obj);
+            var rtn = eval.apply(null, [obj]);
             console.log('=============================');
             callback(undefined, rtn);
         }
@@ -174,7 +174,7 @@
             console.log("%c GOT SIBLANT ", "color:red;background:black;");
             console.log(obj);
             console.log('=============================');
-            var rtn = eval(sibilant.sibilize(obj));
+            var rtn = eval.apply(null, [sibilant.sibilize(obj)]);
             console.log('=============================');
             callback(undefined, rtn);
         }

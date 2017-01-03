@@ -34,16 +34,7 @@
 ;; include sibilant-skewer-mode first
 (defun sibilant-jsonrpc-send-region (beg end)
   (let ((selected (buffer-substring beg end)))
-    (with-temp-buffer
-      (let ((tbuf (current-buffer)))
-        (insert sibilant-preamble)
-        (insert selected)
-        (call-process-region
-         (point-min) (point-max)
-         sibilant-program
-         t ;; delete = replace region with eval output
-         tbuf nil "--input")
-        (drivable/eval-sibilant (buffer-string))))))
+    (drivable/json-rpc-request drivable/jrpc-handle "sibilant" (list selected))))
 
 (defun sibilant-jsonrpc-eval-preceding-sexp ()
   (interactive)
