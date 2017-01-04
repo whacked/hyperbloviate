@@ -17,5 +17,8 @@
     "sibilant": "^0.5.5"
   },
   "name": "drivable",
-  "main": "index.html"
+  "main": "main.js",
+  "scripts": {
+      "start": "electron ."
+  }
 }

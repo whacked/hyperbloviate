@@ -21,9 +21,11 @@
         </style>
 
         <div id="main-container"></div>
-        <div id="inject-container" class="to-inject">
-          <h1>injected dom element</h1>
+        <!-- <webview id="inject-container" class="to-inject" src="https://kindle.amazon.com"></webview> -->
+        <div id="inject-container" class="to-inject" src="https://kindle.amazon.com">
+          <h3>temp</h3>
         </div>
+        <div id="control-container" class="to-inject">control container</div>
 
         <!-- server side libs -->
         <script type="text/javascript">
@@ -37,10 +39,25 @@
         </script>
 
         <!-- client side libs -->
+        <script type="text/javascript">
+            try {
+                require("nw.gui").Window.get().showDevTools();
+            } catch(err) {
+                // electron;
+            }
+        </script>
+
+        <!--
+        won't work for electron
         <script type="text/javascript" src="node_modules/jquery/dist/jquery.min.js"></script>
+        -->
         <script type="text/javascript" src="node_modules/immutable/dist/immutable.min.js"></script>
         <script type="text/javascript" src="node_modules/mithril/mithril.min.js"></script>
-
+        <!-- required for electron -->
+        <script type="text/javascript">
+            window.m = require("./node_modules/mithril/mithril.min.js");
+            window.$ = window.jQuery = require('./node_modules/jquery/dist/jquery.min.js');
+        </script>
         <script type="text/javascript" src="node_modules/golden-layout/dist/goldenlayout.min.js"></script>
         <link type="text/css" rel="stylesheet" href="node_modules/golden-layout/src/css/goldenlayout-base.css" />
         <link type="text/css" rel="stylesheet" href="node_modules/golden-layout/src/css/default-theme.css" />
@@ -56,6 +73,40 @@
         (console.log "sibilant from browser")
         </script>
 
+        <script id="js-ext" type="text/javascript">
+https://github.com/rishihahs/domtalk/blob/master/index.js
+function domPath(element) {
+        // Top level elements are body and ones with an id
+        if (element === document.documentElement) {
+            return ':root';
+        } else if (element.tagName && element.tagName.toUpperCase() === 'BODY') {
+            return 'body';
+        } else if (element.id) {
+            return '#' + element.id;
+        }
+
+        var parent = element.parentNode;
+        var parentLoc = domPath(parent);
+
+        // See which index we are in parent. Array#indexOf could also be used here
+        var children = parent.childNodes;
+        var index = 0;
+        for (var i = 0; i < children.length; i++) {
+            // nodeType is 1 if ELEMENT_NODE
+            if (children[i].nodeType === 1) {
+                if (children[i] === element) {
+                    break;
+                }
+
+                index++;
+            }
+        }
+
+        return parentLoc + ' *:nth-child(' + (index + 1) + ')';
+    }
+        </script>
+
+
         <!-- client side init -->
         <script type="text/javascript">
             /* doesn't work, although there may be a nightly that does
@@ -65,11 +116,25 @@
                 })
             });
             */
+
+        var checkjq = setInterval(function() {
+            if(!$) {
+                console.log('non');
+                return;
+            }
+            clearInterval(checkjq);
+            console.log($);
             $(function() {
                 // sibilant preprocessor
                 $("script[type$='text/sibilant']").each(function(i, el) {
                     if(el.src) {
-                        var filepath = el.src.substring(chrome.runtime.getURL("/").length);
+                        try {
+                            var baselen = chrome.runtime.getURL("/").length;
+                        } catch(err) {
+                            var baselen = path.dirname(document.baseURI).length + 1;
+                        }
+                        var filepath = el.src.substring(baselen);
+                        console.log(filepath);
                         fs.readFile(filepath, "utf8", function(err, sibcode) {
                             if(err) {
                                 console.error(err);
@@ -89,8 +154,8 @@
                             type: 'column',
                             content:[{
                                 type: 'component',
-                                componentName: 'regular-component',
-                                componentState: { label: 'regular component label' }
+                                componentName: 'dom-id-component',
+                                componentState: { id: "inject-container" }
                             },{
                                 type: 'component',
                                 componentName: 'dom-component',
@@ -99,9 +164,10 @@
                         },
                                  {
                                      type: 'component',
-                                     componentName: 'dom-id-component',
-                                     componentState: { id: "inject-container" }
-                                 }]
+                                     componentName: 'control-component',
+                                     componentState: { id: 'control-container' }
+                                 }
+                                ]
                     }]
                 };
 
@@ -111,8 +177,8 @@
                 control.innerHTML = "hello!";
 
                 var main_layout = new GoldenLayout(config, document.getElementById("main-container"));
-                main_layout.registerComponent("regular-component", function(container, componentState) {
-                    container.getElement().html('hello from ' + componentState.label);
+                main_layout.registerComponent("control-component", function(container, componentState) {
+                    container.getElement().html(document.getElementById(componentState.id));
                 });
                 main_layout.registerComponent("dom-component", function(container, componentState) {
                     var aux = document.createElement("webview");
@@ -128,11 +194,12 @@
                 $(".to-inject").show();
                 $("webview").show();
             });
+        
+        }, 50);
+
         </script>
 
         <script type="text/javascript">
-        require("nw.gui").Window.get().showDevTools();
-
         function get_webview(wv_idx) {
             wv_idx = wv_idx || 0;
             var wvs = $("webview");
@@ -158,7 +225,7 @@
         }
 
         function attach_webview_event_listeners(wv_idx) {
-            execjs(get_webview(wv_idx), "document.body.addEventListener('click', function(evt) {console.log(evt)})");
+            execjs(get_webview(wv_idx), "document.body.addEventListener('click', function(evt) {console.log(evt.target); console.log(domPath(evt.target))})");
         }
 
         function javascript_handler(obj, callback) {
@@ -207,6 +274,14 @@
         function stop_server() {
             server.close();
         }
+
+        start_server();
+
+          function inject_js_ext() {
+              execjs(get_webview(0), $("#js-ext").html());
+              execjs(get_webview(1), $("#js-ext").html());
+          }
+          
         </script>
     </body>
 </html>
