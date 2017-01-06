@@ -24,6 +24,7 @@
         <!-- <webview id="inject-container" class="to-inject" src="https://kindle.amazon.com"></webview> -->
         <div id="inject-container" class="to-inject" src="https://kindle.amazon.com">
           <h3>temp</h3>
+          <button id="test-button">send</button>
         </div>
         <div id="control-container" class="to-inject">control container</div>
 
@@ -36,6 +37,7 @@
                 domutils = require("domutils"),
                 express = require("express");
             // sibilant = require("");
+          const {ipcRenderer} = require("electron");
         </script>
 
         <!-- client side libs -->
@@ -72,40 +74,6 @@
         <script type="text/sibilant">
         (console.log "sibilant from browser")
         </script>
-
-        <script id="js-ext" type="text/javascript">
-https://github.com/rishihahs/domtalk/blob/master/index.js
-function domPath(element) {
-        // Top level elements are body and ones with an id
-        if (element === document.documentElement) {
-            return ':root';
-        } else if (element.tagName && element.tagName.toUpperCase() === 'BODY') {
-            return 'body';
-        } else if (element.id) {
-            return '#' + element.id;
-        }
-
-        var parent = element.parentNode;
-        var parentLoc = domPath(parent);
-
-        // See which index we are in parent. Array#indexOf could also be used here
-        var children = parent.childNodes;
-        var index = 0;
-        for (var i = 0; i < children.length; i++) {
-            // nodeType is 1 if ELEMENT_NODE
-            if (children[i].nodeType === 1) {
-                if (children[i] === element) {
-                    break;
-                }
-
-                index++;
-            }
-        }
-
-        return parentLoc + ' *:nth-child(' + (index + 1) + ')';
-    }
-        </script>
-
 
         <!-- client side init -->
         <script type="text/javascript">
@@ -176,6 +144,35 @@ function domPath(element) {
                 var control = document.createElement("div");
                 control.innerHTML = "hello!";
 
+                function resize_webviews() {
+                    var wvs = document.getElementsByTagName("webview");
+                    for(var i=0; i<wvs.length; ++i) {
+                        var wv = wvs[i];
+                        console.log(wv);
+                        wv.style.width = document.documentElement.clientWidth + "px";
+                        wv.style.height = document.documentElement.clientHeight + "px";
+                    }
+                }
+
+                callback_cache = {};
+                function register_callback(channel, func) {
+                    callback_cache[channel] = function(arg) {
+                        console.log("removing callback ...");
+                        callback_cache[channel] = null;
+                        console.log("calling callback ...");
+                        func(arg);
+                        console.log("done ...");
+                    }
+                }
+                function ipc_event_dispatcher(evt) {
+                    console.log("IPC EVENT: " + evt.channel);
+                    console.log(evt.args);
+                    if(callback_cache[evt.channel]) {
+                        console.log("dispatching to registered callback");
+                        callback_cache[evt.channel].apply(null, evt.args);
+                    }
+                }
+
                 var main_layout = new GoldenLayout(config, document.getElementById("main-container"));
                 main_layout.registerComponent("control-component", function(container, componentState) {
                     container.getElement().html(document.getElementById(componentState.id));
@@ -183,7 +180,14 @@ function domPath(element) {
                 main_layout.registerComponent("dom-component", function(container, componentState) {
                     var aux = document.createElement("webview");
                     aux.useragent = user_agent;
+                    aux.autosize = "on";
                     aux.src = "https://ddg.gg";
+                    aux.preload = __dirname + "/webview_preload.js";
+                    console.log("====> " + aux.preload);
+
+                    aux.addEventListener("ipc-message", ipc_event_dispatcher);
+                    aux.send("get-html");
+
                     container.getElement().html(aux);
                 });
                 main_layout.registerComponent("dom-id-component", function(container, componentState) {
@@ -192,7 +196,22 @@ function domPath(element) {
                 main_layout.init();
 
                 $(".to-inject").show();
-                $("webview").show();
+                $("webview").show().css({display: "flex"});
+
+                ipcRenderer.send("ipc", "hello ipc 1");
+                ipcRenderer.send("test", "hello NON-ipc 1");
+
+                get_webview().send("get-html");
+                get_webview().send("get-html", "FOO FII FI");
+                get_webview().send("ipc", "foo i p c");
+                get_webview().send("ipc-message", "foo i p c");
+
+                $("#test-button").on("click", function() {
+                    console.log("clicky");
+                    get_webview().send("get-html");
+                    ipcRenderer.sendToHost("in clicky");
+                });
+
             });
         
         }, 50);
@@ -211,9 +230,16 @@ function domPath(element) {
 
         function execjs(wv, js, cb) {
             if(!wv) { return; }
-            wv.executeScript({code:js}, cb ? cb(res) : function(res){
-                console.log(res[0])
-            });
+            if(wv.executeScript) {
+                wv.executeScript({code:js}, cb ? cb(res) : function(res){
+                    console.log(res[0])
+                });
+            } else if(wv.send) {
+                if(cb) {
+                    register_callback("mychannel", cb);
+                }
+                wv.send("eval", js);
+            }
         }
 
         function get_webview_html(wv_idx) {
@@ -225,7 +251,7 @@ function domPath(element) {
         }
 
         function attach_webview_event_listeners(wv_idx) {
-            execjs(get_webview(wv_idx), "document.body.addEventListener('click', function(evt) {console.log(evt.target); console.log(domPath(evt.target))})");
+            execjs(get_webview(wv_idx), "document.body.addEventListener('click', function(evt) {var csg=new CssSelectorGenerator; console.log(evt.target); console.log(csg.getSelector(evt.target))}, true)");
         }
 
         function javascript_handler(obj, callback) {
@@ -276,12 +302,6 @@ function domPath(element) {
         }
 
         start_server();
-
-          function inject_js_ext() {
-              execjs(get_webview(0), $("#js-ext").html());
-              execjs(get_webview(1), $("#js-ext").html());
-          }
-          
         </script>
     </body>
 </html>
