@@ -23,7 +23,7 @@
                       (string-bytes encoded))
               encoded)
       (process-send-region process (point-min) (point-max)))
-    (json-rpc-wait connection)))
+    (message "%s" (json-rpc-wait connection))))
 
 (defun drivable/eval-javascript (js)
   (drivable/json-rpc-request drivable/jrpc-handle "javascript" (list js)))
@@ -34,10 +34,10 @@
 ;; include sibilant-skewer-mode first
 (defun sibilant-jsonrpc-send-region (beg end)
   (let ((selected (buffer-substring beg end)))
-    (drivable/json-rpc-request drivable/jrpc-handle "sibilant" (list selected))))
+    (drivable/eval-sibilant selected)))
 
-(defun sibilant-jsonrpc-eval-preceding-sexp ()
-  (interactive)
+(defun sibilant-jsonrpc-eval-preceding-sexp (&optional prefix)
+  (interactive "P")
   (save-excursion
     (let ((beg (progn (beginning-of-sexp)
                       (point)))
