@@ -59,6 +59,11 @@
         <script type="text/javascript">
             window.m = require("./node_modules/mithril/mithril.min.js");
             window.$ = window.jQuery = require('./node_modules/jquery/dist/jquery.min.js');
+
+            Const = {
+                WEBVIEW_ELEMENT_CLICK: "webview-element-click"
+            }
+
         </script>
         <script type="text/javascript" src="node_modules/golden-layout/dist/goldenlayout.min.js"></script>
         <link type="text/css" rel="stylesheet" href="node_modules/golden-layout/src/css/goldenlayout-base.css" />
@@ -164,6 +169,7 @@
                         console.log("done ...");
                     }
                 }
+                dispatcher_mapping = {};
                 function ipc_event_dispatcher(evt) {
                     console.log("IPC EVENT: " + evt.channel);
                     console.log(evt.args);
@@ -171,7 +177,13 @@
                         console.log("dispatching to registered callback");
                         callback_cache[evt.channel].apply(null, evt.args);
                     }
+                    if(dispatcher_mapping[evt.channel]) {
+                        dispatcher_mapping[evt.channel].apply(null, evt.args);
+                    }
                 }
+                dispatcher_mapping[Const.WEBVIEW_ELEMENT_CLICK] = function(arg) {
+                    window.Dynamic.exec(Const.WEBVIEW_ELEMENT_CLICK, arg);
+                };
 
                 var main_layout = new GoldenLayout(config, document.getElementById("main-container"));
                 main_layout.registerComponent("control-component", function(container, componentState) {
@@ -236,7 +248,7 @@
                 });
             } else if(wv.send) {
                 if(cb) {
-                    register_callback("mychannel", cb);
+                    register_callback("chn-webview", cb);
                 }
                 wv.send("eval", js);
             }
@@ -251,7 +263,7 @@
         }
 
         function attach_webview_event_listeners(wv_idx) {
-            execjs(get_webview(wv_idx), "document.body.addEventListener('click', function(evt) {var csg=new CssSelectorGenerator; console.log(evt.target); console.log(csg.getSelector(evt.target))}, true)");
+            execjs(get_webview(wv_idx), "document.body.addEventListener('click', function(evt) {var csg=new CssSelectorGenerator; ipcRenderer.sendToHost('"+Const.WEBVIEW_ELEMENT_CLICK+"', csg.getSelector(evt.target))}, true)");
         }
 
         function javascript_handler(obj, callback) {

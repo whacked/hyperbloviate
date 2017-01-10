@@ -1,1 +1,57 @@
-(console.log "sibilant from dynamic file")
+(var click-hist (m.prop []))
+(set window 'click-hist click-hist)
+(scoped
+ (var ui { controller: (#>
+                        (console.info "in controller")
+                        { })
+           
+           view: (#(ctrl)
+                   (var self this
+                        table (m "div.grid"
+                                 { style: { position: "relative"
+                                            float: "left"
+                                            background: "#444"
+                                            color: "#fff"
+                                            padding: "2px"
+                                            margin: "2px"
+                                            width: (+ (* (+ self.panel-w
+                                                            (* 2 self.panel-border-width)
+                                                            self.panel-margin)
+                                                         self.panel-x)
+                                                      "px")
+                                            height: (+ (* (+ self.panel-h
+                                                             (* 2 self.panel-border-width)
+                                                             self.panel-margin)
+                                                          self.panel-y)
+                                                       "px")
+                                            } }
+                                 (m "ul"
+                                    {}
+                                  (scoped
+                                   (var rtn [])
+                                   (each (item i) (click-hist)
+                                         (rtn.push
+                                          (m "li"
+                                             (+ ""
+                                                i ". "
+                                                item))))
+                                   rtn))
+                                 (m "button"
+                                    { onclick: (#> (console.log "CLICKED")
+                                                   (|> (click-hist)
+                                                       (.push "thing"))) }
+                                    "click me!"))))})
+ (m.mount (document.getElementById "control-container")
+          ui))
+
+(var Dynamic { exec: (#(channel arg)
+                       (var func (get Dynamic channel))
+                       (when func (func arg))) })
+(set Dynamic Const.WEBVIEW_ELEMENT_CLICK
+     (#(selector)
+       (m.startComputation)
+       (|> (click-hist)
+           (.push selector))
+       (m.endComputation)))
+
+(set window 'Dynamic Dynamic)
