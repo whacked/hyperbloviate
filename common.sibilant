@@ -1,0 +1,38 @@
+(var Const { "WEBVIEW_ELEMENT_CLICK": "webview-element-click" })
+
+(var require-CssSelectorGenerator (require "css-selector-generator")
+     CssSelectorGenerator require-CssSelectorGenerator.CssSelectorGenerator
+     require-electron (require "electron")
+     ipcRenderer require-electron.ipcRenderer)
+
+(var exports {})
+(set module 'exports exports)
+
+(def flash-element (el duration interval)
+     (var hl-outline "#f00 solid 4px"
+          orig-outline el.style.outline
+          t0 (new Date)
+          is-toggled false)
+     (var tid (setInterval
+               (#>
+                (console.log "flashing at "
+                             (- (new Date) t0)
+                             (= el.style.outline hl-outline))
+                (if (< duration (- (new Date) t0))
+                    (scoped
+                     (clearInterval tid)
+                     (set el.style "outline" orig-outline))
+                    (set el.style "outline"
+                         (if is-toggled orig-outline hl-outline)))
+                (assign is-toggled (not is-toggled)))
+               interval)))
+
+(set exports
+     'Const Const
+     'proc_right_click (#(evt)
+                         (var csg (new CssSelectorGenerator)
+                              tgt evt.target)
+                         (flash-element tgt 600 100)
+                         (ipcRenderer.sendToHost
+                          Const.WEBVIEW_ELEMENT_CLICK
+                          (csg.getSelector tgt))))

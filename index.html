@@ -51,6 +51,8 @@
             } catch(err) {
                 // electron;
             }
+          var common = require("./common"),
+              Const = common.Const;
         </script>
 
         <!--
@@ -63,11 +65,6 @@
         <script type="text/javascript">
             window.m = require("./node_modules/mithril/mithril.min.js");
             window.$ = window.jQuery = require('./node_modules/jquery/dist/jquery.min.js');
-
-            Const = {
-                WEBVIEW_ELEMENT_CLICK: "webview-element-click"
-            }
-
         </script>
         <script type="text/javascript" src="node_modules/golden-layout/dist/goldenlayout.min.js"></script>
         <link type="text/css" rel="stylesheet" href="node_modules/golden-layout/src/css/goldenlayout-base.css" />
