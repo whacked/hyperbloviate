@@ -264,7 +264,7 @@
         }
 
         function attach_webview_event_listeners(wv_idx) {
-            execjs(get_webview(wv_idx), "document.body.addEventListener('click', function(evt) {var csg=new CssSelectorGenerator; ipcRenderer.sendToHost('"+Const.WEBVIEW_ELEMENT_CLICK+"', csg.getSelector(evt.target))}, true)");
+            execjs(get_webview(wv_idx), "document.body.addEventListener('contextmenu', common.proc_right_click, true)");
         }
 
         function javascript_handler(obj, callback) {
