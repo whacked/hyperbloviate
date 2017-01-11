@@ -25,6 +25,10 @@
         <div id="inject-container" class="to-inject" src="https://kindle.amazon.com">
           <h3>temp</h3>
           <button id="test-button">send</button>
+          
+          <button onclick="get_webview().openDevTools()">openDevTools</button>
+          <button onclick="get_webview().closeDevTools()">closeDevTools</button>
+          <button onclick="attach_webview_event_listeners()">inject</button>
         </div>
         <div id="control-container" class="to-inject">control container</div>
 
