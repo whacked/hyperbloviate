@@ -1,4 +1,4 @@
-const common = require("./common");
+const common = require("./sib/common");
 const {ipcRenderer} = require("electron");
 const {CssSelectorGenerator} = require("css-selector-generator");
 

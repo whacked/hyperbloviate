@@ -51,7 +51,7 @@
             } catch(err) {
                 // electron;
             }
-          var common = require("./common"),
+          var common = require("./sib/common"),
               Const = common.Const;
         </script>
 
@@ -75,8 +75,8 @@
         <!-- compiled sibilant
             sibilant compiled.sibilant -m -o .
         -->
-        <script type="text/javascript" src="compiled.js"></script>
-        <script type="text/sibilant" src="dynamic.sibilant"></script>
+        <script type="text/javascript" src="sib/compiled.js"></script>
+        <script type="text/sibilant" src="sib/dynamic.sibilant"></script>
         <script type="text/sibilant">
         (console.log "sibilant from browser")
         </script>
