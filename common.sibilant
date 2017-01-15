@@ -1,3 +1,5 @@
+;; common between host window and hosted webviews
+
 (var Const { "WEBVIEW_ELEMENT_CLICK": "webview-element-click" })
 
 (var require-CssSelectorGenerator (require "css-selector-generator")
@@ -9,22 +11,46 @@
 (set module 'exports exports)
 
 (def flash-element (el duration interval)
+     (var overlay (document.createElement "div")
+          el-bbox (el.getBoundingClientRect)
+          border-size 2
+          padding-size 2
+          x (- el-bbox.left padding-size)
+          y (- el-bbox.top padding-size)
+          w (+ (- el-bbox.right el-bbox.left)
+               (* 2 padding-size))
+          h (+ (- el-bbox.bottom el-bbox.top)
+               (* 2 padding-size)))
+     (|> overlay
+         (.setAttribute "style" (+ "position:absolute;"
+                                   "z-index:9999;"
+                                   "left:" x "px;"
+                                   "top:" y "px;"
+                                   "width:" w "px;"
+                                   "height:" h "px;"
+                                   "outline:" "blue" " dashed " border-size "px;"
+                                   "background: #ccf;"
+                                   "opacity: 0.5;"
+                                   "filter: alpha(opacity=0.5);")))
+     (document.body.appendChild overlay)
      (var hl-outline "#f00 solid 4px"
           orig-outline el.style.outline
           t0 (new Date)
-          is-toggled false)
+          toggle-counter 0)
+
      (var tid (setInterval
                (#>
-                (console.log "flashing at "
-                             (- (new Date) t0)
-                             (= el.style.outline hl-outline))
                 (if (< duration (- (new Date) t0))
                     (scoped
                      (clearInterval tid)
-                     (set el.style "outline" orig-outline))
-                    (set el.style "outline"
-                         (if is-toggled orig-outline hl-outline)))
-                (assign is-toggled (not is-toggled)))
+                     (set el.style "outline" orig-outline)
+                     (document.body.removeChild overlay))
+                    (scoped
+                     (set el.style "outline"
+                          (if (= 0 (mod toggle-counter 2))
+                              orig-outline
+                              hl-outline))))
+                (incr toggle-counter))
                interval)))
 
 (set exports
