@@ -16,7 +16,7 @@
     (with-current-buffer (process-buffer (json-rpc-process connection))
       (erase-buffer))
     (with-temp-buffer
-      (insert (concat "POST " drivable-jrpc-endpoint " HTTP/1.1\r\n"))
+      (insert (concat "POST " drivable/jrpc-endpoint " HTTP/1.1\r\n"))
       (insert (format (concat "Content-Length: %d\r\n"
                               "Content-Type: application/json\r\n"
                               "\r\n")
