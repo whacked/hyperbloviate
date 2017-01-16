@@ -61,4 +61,9 @@
                          (flash-element tgt 600 100)
                          (ipcRenderer.sendToHost
                           Const.WEBVIEW_ELEMENT_CLICK
-                          (csg.getSelector tgt))))
+                          (JSON.stringify
+                           { x: evt.clientX
+                             y: evt.clientY
+                             tag: (evt.target.tagName.toLowerCase)
+                             type: (evt.target.type.toLowerCase)
+                             selector: (csg.getSelector tgt)}))))
