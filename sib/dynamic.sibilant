@@ -29,18 +29,37 @@
                                     {}
                                   (scoped
                                    (var rtn [])
-                                   (each (item i) (click-hist)
+                                   (each (locater i) (click-hist)
                                          (rtn.push
                                           (m "li"
-                                             (+ ""
-                                                i ". "
-                                                item))))
+                                             (m "span"
+                                                (+ "" i ". "))
+                                             (m "button"
+                                                { onclick: (#>
+                                                            (var exec-string
+                                                                 (if (or (= locater.tag "button")
+                                                                         (= locater.tag "a")
+                                                                         (and (= locater.tag "input")
+                                                                              (or (= locater.type "submit")
+                                                                                  (= locater.type "button"))))
+                                                                     (+ "common.click_selector('" locater.selector "')")
+                                                                     null
+                                                                     ;; (+ "common.fire_event_on('" locater.selector "', 'Click')")
+                                                                     ))
+                                                            (when exec-string
+                                                             (|> (get_webview)
+                                                                 (execjs
+                                                                  exec-string)))
+                                                            ) }
+                                                (JSON.stringify locater))
+                                             )))
                                    rtn))
-                                 (m "button"
-                                    { onclick: (#> (console.log "CLICKED")
-                                                   (|> (click-hist)
-                                                       (.push "thing"))) }
-                                    "click me!"))))})
+                                 ;; (m "button"
+                                 ;;    { onclick: (#> (console.log "CLICKEDZ")
+                                 ;;                   (|> (click-hist)
+                                 ;;                       (.push "thing"))) }
+                                 ;;    "click me!")
+                                 )))})
  (m.mount (document.getElementById "control-container")
           ui))
 
@@ -48,10 +67,11 @@
                        (var func (get Dynamic channel))
                        (when func (func arg))) })
 (set Dynamic Const.WEBVIEW_ELEMENT_CLICK
-     (#(selector)
+     (#(js)
+       (var locater (JSON.parse js))
        (m.startComputation)
        (|> (click-hist)
-           (.push selector))
+           (.push locater))
        (m.endComputation)))
 
 (set window 'Dynamic Dynamic)
