@@ -1,6 +1,8 @@
 const  {app, BrowserWindow, ipcMain} = require("electron");
 const path = require("path");
 
+const robot = require("robotjs");
+
 let mainWindow;
 
 app.on("window-all-closed", function() {

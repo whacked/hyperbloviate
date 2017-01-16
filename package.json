@@ -15,11 +15,15 @@
     "jquery": "^3.1.1",
     "mithril": "^0.2.5",
     "multitransport-jsonrpc": "^0.9.4",
+    "robotjs": "^0.4.5",
     "sibilant": "^0.5.5"
   },
   "name": "drivable",
   "main": "main.js",
   "scripts": {
     "start": "electron ."
+  },
+  "devDependencies": {
+    "electron-rebuild": "^1.5.6"
   }
 }
