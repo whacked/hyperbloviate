@@ -55,6 +55,20 @@
 
 (set exports
      'Const Const
+     'do_alert (#(x) (alert x))
+     'click_selector (#(selector)
+                       (var el (document.querySelector selector))
+                       (when (and el el.click)
+                             (console.log (el.click))))
+     ;; see http://stackoverflow.com/a/809182
+     'fire_event_on (#(selector etype)
+                      (var el (document.querySelector selector))
+                      (if el.fireEvent
+                          (el.fireEvent (+ "on" etype))
+                          (scoped
+                           (|> (document.createEvent "Events")
+                               (tap (.initEvent etype true false))
+                               (el.dispatchEvent)))))
      'proc_right_click (#(evt)
                          (var csg (new CssSelectorGenerator)
                               tgt evt.target)
