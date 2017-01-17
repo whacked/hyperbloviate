@@ -29,9 +29,18 @@
           <h3>temp</h3>
           <button id="test-button">send</button>
           
-          <button onclick="get_webview().openDevTools()">openDevTools</button>
-          <button onclick="get_webview().closeDevTools()">closeDevTools</button>
-          <button onclick="attach_webview_event_listeners()">inject</button>
+          <fieldset>
+            <legend>data stuff</legend>
+            <button onclick="db.load()">load from db</button>
+            <button onclick="db.save()">save to db</button>
+          </fieldset>
+          
+          <fieldset>
+            <legend>webview stuff</legend>
+            <button onclick="get_webview().openDevTools()">openDevTools</button>
+            <button onclick="get_webview().closeDevTools()">closeDevTools</button>
+            <button onclick="attach_webview_event_listeners()">inject</button>
+          </fieldset>
         </div>
         <div id="control-container" class="to-inject">control container</div>
 

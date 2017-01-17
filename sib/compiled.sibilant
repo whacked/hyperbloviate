@@ -1,1 +1,32 @@
 (console.log "sibilant from compiled file")
+
+(def set-webview-url ()
+     (var wv-idx (if (= 1 (length arguments))
+                     0
+                     (first arguments))
+          url (if (= 1 (length arguments))
+                  (first arguments)
+                  (last arguments)))
+     (|> (get_webview wv-idx)
+         (.setAttribute "src" url)))
+
+(def get-webview-url (wv-idx)
+     (|> (get_webview wv-idx)
+         (.getAttribute "src")))
+
+(set window 'Datastore (require "nedb"))
+(var DB (new Datastore { filename: "store.db"
+                         autoload: true
+                         timestampData: true })
+     db { load: (#>
+                 (DB.findOne
+                  { url: (get-webview-url) }
+                  (#(err, doc)
+                    (m.startComputation)
+                    (click-hist (get doc 'clickHistory))
+                    (m.endComputation))))
+          save: (#>
+                 (DB.insert { url: (get-webview-url)
+                              clickHistory: (click-hist) }))
+         }
+     )
