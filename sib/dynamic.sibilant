@@ -32,26 +32,48 @@
                                    (each (locater i) (click-hist)
                                          (rtn.push
                                           (m "li"
-                                             (m "span"
-                                                (+ "" i ". "))
-                                             (m "button"
-                                                { onclick: (#>
-                                                            (var exec-string
-                                                                 (if (or (= locater.tag "button")
-                                                                         (= locater.tag "a")
-                                                                         (and (= locater.tag "input")
-                                                                              (or (= locater.type "submit")
-                                                                                  (= locater.type "button"))))
-                                                                     (+ "common.click_selector('" locater.selector "')")
-                                                                     null
-                                                                     ;; (+ "common.fire_event_on('" locater.selector "', 'Click')")
-                                                                     ))
-                                                            (when exec-string
-                                                             (|> (get_webview)
-                                                                 (execjs
-                                                                  exec-string)))
-                                                            ) }
-                                                (JSON.stringify locater))
+                                             (m "div"
+                                                (m "span"
+                                                   (+ "" i ". "))
+
+
+                                                (m "button"
+                                                   { style: { margin: "0.2em"
+                                                              width: "1.3em"
+                                                              height: "1.3em"
+                                                              lineHeight: "1.3em"
+                                                              color: "white"
+                                                              align: "center"
+                                                              textAlign: "center"
+                                                              verticalAlign: "middle"
+                                                              borderRadius: "3px"
+                                                              backgroundColor: "red"
+                                                              }
+                                                     onclick: (#>
+                                                               (var head (|> (click-hist)
+                                                                             (.slice 0 i))
+                                                                    tail (|> (click-hist)
+                                                                             (.slice (+ 1 i))))
+                                                               (click-hist (head.concat tail))) }
+                                                   (m "i" { class: "fa fa-times" } ))
+                                                (m "button"
+                                                   { onclick: (#>
+                                                               (var exec-string
+                                                                    (if (or (= locater.tag "button")
+                                                                            (= locater.tag "a")
+                                                                            (and (= locater.tag "input")
+                                                                                 (or (= locater.type "submit")
+                                                                                     (= locater.type "button"))))
+                                                                        (+ "common.click_selector('" locater.selector "')")
+                                                                        null
+                                                                        ;; (+ "common.fire_event_on('" locater.selector "', 'Click')")
+                                                                        ))
+                                                               (when exec-string
+                                                                     (|> (get_webview)
+                                                                         (execjs
+                                                                          exec-string)))
+                                                               ) }
+                                                   (JSON.stringify locater)))
                                              )))
                                    rtn))
                                  ;; (m "button"
