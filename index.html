@@ -133,7 +133,7 @@
                     }
                 });
 
-                var config = {
+                var default_config = {
                     content: [{
                         type: 'row',
                         content:[{
@@ -198,14 +198,29 @@
                     window.Dynamic.exec(Const.WEBVIEW_ELEMENT_CLICK, arg);
                 };
 
-                var main_layout = new GoldenLayout(config, document.getElementById("main-container"));
+                var main_container = document.getElementById("main-container");
+                var saved_state = localStorage.getItem("layout");
+                var config;
+                if(saved_state != null) {
+                    config = JSON.parse(saved_state);
+                } else {
+                    config = default_config;
+                }
+                var main_layout = new GoldenLayout(config, main_container);
+
                 window.GL = main_layout;
-                window.addEventListener('resize', function(e) {
+                window.addEventListener("resize", function(e) {
                     window.GL.updateSize();
                 })
                 main_layout.registerComponent("control-component", function(container, componentState) {
                     container.getElement().html(document.getElementById(componentState.id));
                 });
+                myLayout = new GoldenLayout( config );
+                main_layout.on("stateChanged", function() {
+                    var state = main_layout.toConfig();
+                    localStorage.setItem("layout", JSON.stringify(state));
+                });
+
                 main_layout.registerComponent("dom-component", function(container, componentState) {
                     var aux = document.createElement("webview");
                     aux.useragent = user_agent;
