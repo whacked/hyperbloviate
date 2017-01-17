@@ -199,6 +199,10 @@
                 };
 
                 var main_layout = new GoldenLayout(config, document.getElementById("main-container"));
+                window.GL = main_layout;
+                window.addEventListener('resize', function(e) {
+                    window.GL.updateSize();
+                })
                 main_layout.registerComponent("control-component", function(container, componentState) {
                     container.getElement().html(document.getElementById(componentState.id));
                 });
