@@ -59,7 +59,12 @@
      'click_selector (#(selector)
                        (var el (document.querySelector selector))
                        (when (and el el.click)
-                             (console.log (el.click))))
+                             (flash-element el 500 100)
+                             (setTimeout
+                              (#>
+                               (console.log
+                                "CLICKY..." (el.click)))
+                              3000)))
      ;; see http://stackoverflow.com/a/809182
      'fire_event_on (#(selector etype)
                       (var el (document.querySelector selector))
