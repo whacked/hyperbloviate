@@ -119,8 +119,130 @@
                     (out.push (miccup hh)))
               (apply m out)))))
 
+(var control-state (m.prop { 'session-list: ["a" "b" "c"]
+                             
+                            }))
 (def mapcar (func list)
      (var rtn [])
      (each (o) list
            (rtn.push (func o)))
      rtn)
+(scoped
+ (def action-list-view ()
+      (scoped
+       (var rtn [])
+       (each (locater i) (click-hist)
+             (rtn.push
+              (m "li"
+                 (m "div"
+                    (m "span"
+                       (+ "" i ". "))
+
+
+                    (m "button"
+                       { style: { margin: "0.2em"
+                                  width: "1.3em"
+                                  height: "1.3em"
+                                  lineHeight: "1.3em"
+                                  color: "white"
+                                  align: "center"
+                                  textAlign: "center"
+                                  verticalAlign: "middle"
+                                  borderRadius: "3px"
+                                  backgroundColor: "red" }
+                         onclick: (#>
+                                   (var head (|> (click-hist)
+                                                 (.slice 0 i))
+                                        tail (|> (click-hist)
+                                                 (.slice (+ 1 i))))
+                                   (click-hist (head.concat tail))) }
+                       (m "i" { class: "fa fa-times" } ))
+                    (m "button"
+                       { onclick: (#>
+                                   (var exec-string
+                                        (if (or (= locater.tag "button")
+                                                (= locater.tag "a")
+                                                (and (= locater.tag "input")
+                                                     (or (= locater.type "submit")
+                                                         (= locater.type "button"))))
+                                            (+ "common.click_selector('" locater.selector "')")
+                                            null
+                                            ;; (+ "common.fire_event_on('" locater.selector "', 'Click')")
+                                            ))
+                                   (when exec-string
+                                         (|> (get_webview)
+                                             (execjs
+                                              exec-string)))
+                                   ) }
+                       (JSON.stringify locater)))
+                 )))
+       rtn))
+
+ (var ui { controller: (#>
+                        (console.info "in controller")
+                        { })
+           view: (#(ctrl)
+                   (var self this
+                        table (|> (miccup
+                                   ["div"
+                                     { style: { position: "relative"
+                                                float: "left"
+                                                background: "#444"
+                                                color: "#fff"
+                                                padding: "2px"
+                                                margin: "2px"
+                                                ;; width: (+ (* (+ self.panel-w
+                                                ;;                 (* 2 self.panel-border-width)
+                                                ;;                 self.panel-margin)
+                                                ;;              self.panel-x)
+                                                ;;           "px")
+                                                ;; height: (+ (* (+ self.panel-h
+                                                ;;                  (* 2 self.panel-border-width)
+                                                ;;                  self.panel-margin)
+                                                ;;               self.panel-y)
+                                                ;;            "px")
+                                                width: "100%"
+                                                height: "100%"
+                                                } }
+                                     ["style"
+                                       "ul.tab-list { list-style-type: none }"
+                                       "ul.tab-list li { float: left; border: 1px solid red; margin: 2px; padding: 2px; width: 100px; }"
+                                       "ul.tab-list li:hover { background: gray; color: black; }"
+                                       "ul.tab-list li.active { background: white; color: black; }"
+                                       ]
+                                     (scoped
+                                      ["ul.tab-list"
+                                        {  }
+                                        [["li.active"
+                                           {  }
+                                           "saved urls"]
+                                          ["li"
+                                            {  }
+                                            "action list"]]
+                                        ])
+                                     ["div" { style: { clear: "both" } }]
+                                     ["div"
+                                       { style: { width: "100%"
+                                                  height: "100%"
+                                                  color: "black"
+                                                  background: "white"
+                                                  }}
+                                       ["b" "sessions"]
+                                       ["hr"]
+                                       (scoped
+                                        (mapcar
+                                         (#(session)
+                                           ["div"
+                                             {  }
+                                             (+ " - " session)])
+                                         (or (get (control-state) 'session-list)
+                                             [])))
+
+                                       ["hr"]
+                                       ["div"
+                                         (action-list-view)]
+                                       ]
+                                     ])
+                                  (tap (console.log)))))})
+ (m.mount (document.getElementById "control-container")
+          ui))
