@@ -97,3 +97,24 @@
        (m.endComputation)))
 
 (set window 'Dynamic Dynamic)
+(def miccup (hiccup)
+     (if (not (Array.isArray hiccup))
+         hiccup
+         (if (Array.isArray (first hiccup))
+             ;; nested array
+             (scoped
+              (var out [])
+
+              (each (hh i) hiccup
+                    (out.push (apply m hh)))
+              out)
+             ;; normal hiccup
+             (scoped
+              (var tag (first hiccup)
+                   has-attr? (= (typeof (second hiccup)) "object")
+                   attr (if has-attr? (second hiccup) {})
+                   remainder-start (if has-attr? 2 1)
+                   out [tag attr])
+              (each (hh i) (hiccup.slice remainder-start)
+                    (out.push (miccup hh)))
+              (apply m out)))))
