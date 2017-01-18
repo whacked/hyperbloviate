@@ -64,7 +64,8 @@
                 // electron;
             }
           var common = require("./sib/common"),
-              Const = common.Const;
+              Const = common.Const,
+              Conf = { outputEval: false };
         </script>
 
         <!--
@@ -109,7 +110,6 @@
                 return;
             }
             clearInterval(checkjq);
-            console.log($);
             $(function() {
                 // sibilant preprocessor
                 $("script[type$='text/sibilant']").each(function(i, el) {
@@ -120,7 +120,7 @@
                             var baselen = path.dirname(document.baseURI).length + 1;
                         }
                         var filepath = el.src.substring(baselen);
-                        console.log(filepath);
+                        console.log("loading: " + "%c" + filepath, "color:blue");
                         fs.readFile(filepath, "utf8", function(err, sibcode) {
                             if(err) {
                                 console.error(err);
@@ -299,20 +299,24 @@
         }
 
         function javascript_handler(obj, callback) {
-            console.log("%c GOT JAVASCRIPT ", "color:gray;background:gold;");
-            console.log(obj);
-            console.log('=============================');
+            console.log("%c GOT JAVASCRIPT ", "color:yellow;background:gray;");
+            if(Conf.outputEval) {
+                console.log('=============================');
+                console.log(obj);
+                console.log('=============================');
+            }
             var rtn = eval.apply(null, [obj]);
-            console.log('=============================');
             callback(undefined, rtn);
         }
 
         function sibilant_handler(obj, callback) {
-            console.log("%c GOT SIBLANT ", "color:red;background:black;");
-            console.log(obj);
-            console.log('=============================');
+            console.log("%c GOT SIBLANT ", "color:lime;background:black;");
+            if(Conf.outputEval) {
+                console.log('=============================');
+                console.log(obj);
+                console.log('=============================');
+            }
             var rtn = eval.apply(null, [sibilant.sibilize(obj)]);
-            console.log('=============================');
             callback(undefined, rtn);
         }
 
