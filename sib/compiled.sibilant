@@ -23,10 +23,11 @@
                   { url: (get-webview-url) }
                   (#(err, doc)
                     (m.startComputation)
-                    (click-hist (get doc 'clickHistory))
+                    (when doc
+                          (click-hist (get doc 'click-history)))
                     (m.endComputation))))
           save: (#>
                  (DB.insert { url: (get-webview-url)
-                              clickHistory: (click-hist) }))
+                              'click-history: (click-hist) }))
          }
      )
