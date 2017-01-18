@@ -118,3 +118,9 @@
               (each (hh i) (hiccup.slice remainder-start)
                     (out.push (miccup hh)))
               (apply m out)))))
+
+(def mapcar (func list)
+     (var rtn [])
+     (each (o) list
+           (rtn.push (func o)))
+     rtn)
