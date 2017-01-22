@@ -1,55 +1,4 @@
-;; robotjs
-(try
- (set window 'robot (require "robotjs"))
- (scoped
-  (set window 'robot { moveMouse: (#(_ _)
-                                    (console.log "TODO: mouse fallback")) })))
-
-;; yaml based data control
-(var jsyaml (require "js-yaml")
-     fs (require "fs")
-     electron (require "electron")
-     DATA-DIR "data"
-     __data-dir-path (|> (path.join global.__dirname DATA-DIR)
-                         (path.resolve)))
-
-;; housekeeping
-(when (not (fs.existsSync __data-dir-path))
-      (fs.mkdirSync __data-dir-path))
-
-(var control-state {session-list: (m.prop [])
-                    active-session: (m.prop)})
-
-(var WebViewDriver { exec: (#(channel arg)
-                       (var func (get WebViewDriver channel))
-                       (when func (func arg))) })
-(set WebViewDriver Const.WEBVIEW_ELEMENT_CLICK
-     (#(js)
-       (var asess (control-state.active-session))
-       (if (not asess)
-           (alert "no active session")
-           (scoped
-            (var locater (JSON.parse js))
-            (m-transact!
-             (|> asess.history
-                 (.push locater)))))))
-(set window 'WebViewDriver WebViewDriver)
-
-(fs.readdir
- __data-dir-path
- (#(err file-list)
-   (var re-yml (regex "yml$"))
-   (m-transact!
-    (control-state.session-list
-     (|> file-list
-         (.filter (#(fname)
-                    (fname.match re-yml)))
-         (.map (#(fname)
-                 (|> (path.join __data-dir-path fname)
-                     (fs.readFileSync "utf-8")
-                     (jsyaml.safeLoad)
-                     (tap (set 'filename fname))))))))))
-
+;; remember for emacs: (setq sibilant-preamble "(include \"./macro\")")
 
 (comment
  (DB.find {$exists: "session"}
@@ -59,10 +8,6 @@
                   (m-transact!
                    (set state 'session-list ["a" "b"]))
                   (console.log docs)))))
-
-(db.load)
-
-(def identity (x) x)
 
 (scoped
  (def make-session (url name)
