@@ -85,5 +85,9 @@
                            {x: evt.clientX
                             y: evt.clientY
                             tag: (evt.target.tagName.toLowerCase)
-                            type: (evt.target.type.toLowerCase)
+                            type: (scoped
+                                   (var type (|> evt.target
+                                                 (maybe-get 'type)))
+                                   (if type
+                                       (type.toLowerCase)))
                             selector: (csg.getSelector tgt)}))))

@@ -105,6 +105,12 @@
                                        (or (= locater.type "submit")
                                            (= locater.type "button"))))
                               (+ "common.click_selector('" locater.selector "')")
+                    
+                              true
+                              (+ "document.querySelector('"
+                                 locater.selector
+                                 "').scrollIntoView({behavior: \"smooth\"})")
+                              
                               null
                               ;; (+ "common.fire_event_on('" locater.selector "', 'Click')")
                               ))
