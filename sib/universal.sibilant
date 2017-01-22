@@ -1,0 +1,13 @@
+;; universal sharable code that should be pure js
+(def identity (x) x)
+
+(def maybe-get (obj attr)
+      (if obj
+          (get obj attr)
+          null))
+
+(def mapcar (func list)
+     (var rtn [])
+     (each (o i) list
+           (rtn.push (func o i)))
+     rtn)

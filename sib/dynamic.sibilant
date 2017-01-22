@@ -1,4 +1,4 @@
-;; remember for emacs: (setq sibilant-preamble "(include \"./macro\")")
+;; remember for emacs: (setq drivable/sibilant-preamble-file "macro.sibilant")
 
 (comment
  (DB.find {$exists: "session"}
@@ -15,10 +15,6 @@
        name: name
        history: []
        })
- (def maybe-get (obj attr)
-      (if obj
-          (get obj attr)
-          null))
  (var ui-state {selected-tab: (m.prop 'saved-urls)})
 
  (def render-session-list (session-list)

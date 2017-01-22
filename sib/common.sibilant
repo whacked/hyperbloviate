@@ -1,4 +1,5 @@
 ;; common between host window and hosted webviews
+(include "./universal")
 
 (var Const { "WEBVIEW_ELEMENT_CLICK": "webview-element-click" })
 

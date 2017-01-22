@@ -1,5 +1,6 @@
 (console.log "sibilant from compiled file")
 (include "./macro")
+(include "./universal")
 
 (set window 'Datastore (require "nedb"))
 (var DB (new Datastore { filename: "store.db"
@@ -28,8 +29,6 @@
                                     (console.log "TODO: mouse fallback")) })))
 
 ;; utility
-(def identity (x) x)
-
 (def set-webview-url ()
      ;; arguments is NOT an array!!!
      (var arglist (Array.prototype.slice.call arguments)
@@ -74,12 +73,6 @@
           (each (hh i) (hiccup.slice remainder-start)
                 (out.push (miccup hh)))
           (apply m out))))
-
-(def mapcar (func list)
-     (var rtn [])
-     (each (o i) list
-           (rtn.push (func o i)))
-     rtn)
 
 ;; yaml based data control
 (var jsyaml (require "js-yaml")
