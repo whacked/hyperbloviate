@@ -11,3 +11,6 @@ ipcRenderer.on("eval", function(evt, arg) {
     ipcRenderer.sendToHost("chn-webview", res);
 });
 
+window.addEventListener("DOMContentLoaded", function() {
+    document.body.addEventListener("contextmenu", common.proc_right_click, true);
+});
