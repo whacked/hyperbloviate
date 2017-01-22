@@ -4,3 +4,7 @@ node_modules
 # sibilant generated
 sib/*.js
 sib/*.map
+
+# session data
+data
+store.db
