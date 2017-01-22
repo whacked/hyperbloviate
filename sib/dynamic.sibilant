@@ -141,7 +141,33 @@
            ["ol"
             {style: {margin: "0.5em"
                      padding: "0.5em"}}
-            (mapcar action-list-item sess.history)]]))
+            (mapcar action-list-item sess.history)
+            (when (get sess 'is-dirty)
+                  [["hr"]
+                   ["button"
+                    {onclick: (#>
+                               (m-transact!
+                                (delete sess.is-dirty)
+                                (var new-session-list [])
+                                (each (iter-sess) (control-state.session-list)
+                                      (new-session-list.push
+                                       (if (= iter-sess.filename
+                                              sess.filename)
+                                           sess
+                                           iter-sess)))
+                                (control-state.session-list new-session-list)
+                                (control-state.active-session sess)
+                                (var filepath (path.join __data-dir-path sess.filename))
+                                (fs.writeFile
+                                 filepath
+                                 (jsyaml.safeDump sess)
+                                 (#(err)
+                                   (if err
+                                       (alert (+ "file write failed!\n"
+                                                 (.toString err)))
+                                       (console.log (+ "wrote: " filepath)))))
+                                ))}
+                    "save!"]])]]))
 
  (var ui {controller: (#>
                        (console.info "in controller")
