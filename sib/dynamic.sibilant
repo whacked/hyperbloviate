@@ -43,17 +43,16 @@
  __data-dir-path
  (#(err file-list)
    (var re-yml (regex "yml$"))
-   (m.startComputation)
-   (control-state.session-list
-    (|> file-list
-        (.filter (#(fname)
-                   (fname.match re-yml)))
-        (.map (#(fname)
-                (|> (path.join __data-dir-path fname)
-                    (fs.readFileSync "utf-8")
-                    (jsyaml.safeLoad)
-                    (tap (set 'filename fname)))))))
-   (m.endComputation)))
+   (m-transact!
+    (control-state.session-list
+     (|> file-list
+         (.filter (#(fname)
+                    (fname.match re-yml)))
+         (.map (#(fname)
+                 (|> (path.join __data-dir-path fname)
+                     (fs.readFileSync "utf-8")
+                     (jsyaml.safeLoad)
+                     (tap (set 'filename fname))))))))))
 
 
 (comment
@@ -61,11 +60,9 @@
           (#(err, docs)
             (when docs
                   (var state (control-state))
-                  (m.startComputation)
-                  (set state 'session-list ["a" "b"])
-                  (m.endComputation)
-                  (console.log docs)
-                  ))))
+                  (m-transact!
+                   (set state 'session-list ["a" "b"]))
+                  (console.log docs)))))
 
 (db.load)
 
@@ -87,9 +84,10 @@
       (var asess (control-state.active-session)
            td-style { border: "1px solid gray"
                      padding: "0.5em" }
-           ;; key
-           ;; use 2nd as header if present
-           ;; use last as renderer if a function
+           ;; STRUCTURE: [key, [header?], [renderer?]]
+           ;; - key
+           ;; - use 2nd as header if present
+           ;; - use last as renderer if a function
            hdr-list [['history
                       "# actions"
                       (#(hist)
@@ -254,13 +252,12 @@
                                                                                      (regex "^(.+://)")
                                                                                      "")
                                                                            ".yml")))
-                                                               (m.startComputation)
-                                                               (self.state self.bare-state)
-                                                               (|> (control-state.session-list)
-                                                                   (.push new-session))
-                                                               (control-state.active-session
-                                                                new-session)
-                                                               (m.endComputation))
+                                                               (m-transact!
+                                                                (self.state self.bare-state)
+                                                                (|> (control-state.session-list)
+                                                                    (.push new-session))
+                                                                (control-state.active-session
+                                                                 new-session)))
                                                          )}
                                               "start new session"]]
                                             ]
@@ -286,16 +283,6 @@
                                                 color: "#fff"
                                                 padding: "2px"
                                                 margin: "2px"
-                                                ;; width: (+ (* (+ self.panel-w
-                                                ;;                 (* 2 self.panel-border-width)
-                                                ;;                 self.panel-margin)
-                                                ;;              self.panel-x)
-                                                ;;           "px")
-                                                ;; height: (+ (* (+ self.panel-h
-                                                ;;                  (* 2 self.panel-border-width)
-                                                ;;                  self.panel-margin)
-                                                ;;               self.panel-y)
-                                                ;;            "px")
                                                 width: "100%"
                                                 height: "100%"
                                                 } }
