@@ -136,8 +136,16 @@
               (m "li"
                  (m "div"
                     (m "span"
-                       (+ "" i ". "))
+(var control-state {session-list: (m.prop [])
+                    active-session: (m.prop)})
 
+;; yaml based data control
+(var jsyaml (require "js-yaml")
+     fs (require "fs")
+     electron (require "electron")
+     DATA-DIR "data"
+     __data-dir-path (|> (path.join global.__dirname DATA-DIR)
+                         (path.resolve)))
 
                     (m "button"
                        { style: { margin: "0.2em"
@@ -175,6 +183,27 @@
                                               exec-string)))
                                    ) }
                        (JSON.stringify locater)))
+
+;; housekeeping
+(when (not (fs.existsSync __data-dir-path))
+      (fs.mkdirSync __data-dir-path))
+
+(fs.readdir
+ __data-dir-path
+ (#(err file-list)
+   (var re-yml (regex "yml$"))
+   (m.startComputation)
+   (control-state.session-list
+    (|> file-list
+        (.filter (#(fname)
+                   (fname.match re-yml)))
+        (.map (#(fname)
+                (|> (path.join __data-dir-path fname)
+                    (fs.readFileSync "utf-8")
+                    (jsyaml.safeLoad)
+                    (tap (set 'filename fname)))))))
+   (m.endComputation)))
+
                  )))
        rtn))
 
