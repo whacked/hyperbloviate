@@ -1,12 +1,5 @@
 (console.log "sibilant from compiled file")
-
-;; util
-(macro m-transact! (...body)
-       (^*scoped-without-return
-        `(do
-          (m.startComputation)
-          ...@body
-          (m.endComputation))))
+(include "./macro")
 
 (def set-webview-url ()
      ;; arguments is NOT an array!!!

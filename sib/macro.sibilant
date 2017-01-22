@@ -1,0 +1,7 @@
+;; util
+(macro m-transact! (...body)
+       (^*scoped-without-return
+        `(do
+          (m.startComputation)
+          ...@body
+          (m.endComputation))))
