@@ -1,12 +1,15 @@
 (console.log "sibilant from compiled file")
 
+
 (def set-webview-url ()
-     (var wv-idx (if (= 1 (length arguments))
+     ;; arguments is NOT an array!!!
+     (var arglist (Array.prototype.slice.call arguments)
+          wv-idx (if (= 1 (length arglist))
                      0
-                     (first arguments))
-          url (if (= 1 (length arguments))
-                  (first arguments)
-                  (last arguments)))
+                     (first arglist))
+          url (if (= 1 (length arglist))
+                  (first arglist)
+                  (last arglist)))
      (|> (get_webview wv-idx)
          (.setAttribute "src" url)))
 
