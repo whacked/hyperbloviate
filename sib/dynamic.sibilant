@@ -19,7 +19,7 @@
 
  (def render-session-list (session-list)
       (var asess (control-state.active-session)
-           td-style { border: "1px solid gray"
+           td-style {border: "1px solid gray"
                      padding: "0.5em" }
            ;; STRUCTURE: [key, [header?], [renderer?]]
            ;; - key
@@ -66,7 +66,7 @@
                                        maybe-func
                                        identity))
                      ["td"
-                      { style: td-style }
+                      {style: td-style }
                       (renderer (get sess key))])
                    hdr-list)])
                session-list)])
@@ -79,7 +79,7 @@
          (var asess (control-state.active-session)
               cur-hist asess.history)
          ["button"
-          { style: {margin: "0.2em"
+          {style: {margin: "0.2em"
                     width: "1.3em"
                     height: "1.3em"
                     lineHeight: "1.3em"
@@ -95,9 +95,9 @@
                      (set asess 'history (head.concat tail))
                      (set asess 'is-dirty true)
                      (control-state.active-session asess)) }
-          ["i" { class: "fa fa-times" } ]])
+          ["i" {class: "fa fa-times" } ]])
         ["button"
-         { onclick: (#>
+         {onclick: (#>
                      (var exec-string
                           (if (or (= locater.tag "button")
                                   (= locater.tag "a")
@@ -145,7 +145,7 @@
 
  (var ui {controller: (#>
                        (console.info "in controller")
-                       { })
+                       {})
           tab-def: {saved-urls: {label: "saved urls"
 
                                  ;; find out nicer way to DRY
@@ -161,7 +161,7 @@
                                             ["div"
                                              ["label"
                                               ["input"
-                                               { type: "text"
+                                               {type: "text"
                                                 placeholder: "url"
                                                 size: 40
                                                 onchange: (#(evt)
@@ -173,7 +173,7 @@
                                             ["div"
                                              ["label"
                                               ["input"
-                                               { type: "text"
+                                               {type: "text"
                                                 placeholder: "name"
                                                 size: 40
                                                 onchange: (#(evt)
@@ -224,7 +224,7 @@
                    (var self this ;; self.view is the view object here, for example
                         table (|> (miccup
                                    ["div"
-                                     { style: { position: "relative"
+                                     {style: {position: "relative"
                                                 float: "left"
                                                 background: "#444"
                                                 color: "#fff"
@@ -241,20 +241,20 @@
                                        ]
                                      (scoped
                                       ["ul.tab-list"
-                                        {  }
+                                        {}
                                         (mapcar (#(k i)
                                                   [(+ "li"
                                                       (if (= k (ui-state.selected-tab))
                                                           ".active"
                                                           ""))
-                                                    { onclick: (#>
+                                                    {onclick: (#>
                                                                 (ui-state.selected-tab k)) }
                                                     (get self.tab-def k 'label)])
                                                 (Object.keys self.tab-def))
                                         ])
-                                     ["div" { style: { clear: "both" } }]
+                                     ["div" {style: {clear: "both" } }]
                                      ["div"
-                                       { style: { width: "100%"
+                                       {style: {width: "100%"
                                                   height: "100%"
                                                   color: "black"
                                                   background: "white"
