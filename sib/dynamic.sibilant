@@ -1,89 +1,22 @@
-(var click-hist (m.prop []))
-(set window 'click-hist click-hist)
-(scoped
- (var ui { controller: (#>
-                        (console.info "in controller")
-                        { })
-           
-           view: (#(ctrl)
-                   (var self this
-                        table (m "div.grid"
-                                 { style: { position: "relative"
-                                            float: "left"
-                                            background: "#444"
-                                            color: "#fff"
-                                            padding: "2px"
-                                            margin: "2px"
-                                            width: (+ (* (+ self.panel-w
-                                                            (* 2 self.panel-border-width)
-                                                            self.panel-margin)
-                                                         self.panel-x)
-                                                      "px")
-                                            height: (+ (* (+ self.panel-h
-                                                             (* 2 self.panel-border-width)
-                                                             self.panel-margin)
-                                                          self.panel-y)
-                                                       "px")
-                                            } }
-                                 (m "ul"
-                                    {}
-                                  (scoped
-                                   (var rtn [])
-                                   (each (locater i) (click-hist)
-                                         (rtn.push
-                                          (m "li"
-                                             (m "div"
-                                                (m "span"
-                                                   (+ "" i ". "))
+;; robotjs
+(try
+ (set window 'robot (require "robotjs"))
+ (scoped
+  (set window 'robot { moveMouse: (#(_ _)
+                                    (console.log "TODO: mouse fallback")) })))
 
+;; yaml based data control
+(var jsyaml (require "js-yaml")
+     fs (require "fs")
+     electron (require "electron")
+     DATA-DIR "data"
+     __data-dir-path (|> (path.join global.__dirname DATA-DIR)
+                         (path.resolve)))
 
-                                                (m "button"
-                                                   { style: { margin: "0.2em"
-                                                              width: "1.3em"
-                                                              height: "1.3em"
-                                                              lineHeight: "1.3em"
-                                                              color: "white"
-                                                              align: "center"
-                                                              textAlign: "center"
-                                                              verticalAlign: "middle"
-                                                              borderRadius: "3px"
-                                                              backgroundColor: "red"
-                                                              }
-                                                     onclick: (#>
-                                                               (var head (|> (click-hist)
-                                                                             (.slice 0 i))
-                                                                    tail (|> (click-hist)
-                                                                             (.slice (+ 1 i))))
-                                                               (click-hist (head.concat tail))) }
-                                                   (m "i" { class: "fa fa-times" } ))
-                                                (m "button"
-                                                   { onclick: (#>
-                                                               (var exec-string
-                                                                    (if (or (= locater.tag "button")
-                                                                            (= locater.tag "a")
-                                                                            (and (= locater.tag "input")
-                                                                                 (or (= locater.type "submit")
-                                                                                     (= locater.type "button"))))
-                                                                        (+ "common.click_selector('" locater.selector "')")
-                                                                        null
-                                                                        ;; (+ "common.fire_event_on('" locater.selector "', 'Click')")
-                                                                        ))
-                                                               (when exec-string
-                                                                     (|> (get_webview)
-                                                                         (execjs
-                                                                          exec-string)))
-                                                               ) }
-                                                   (JSON.stringify locater)))
-                                             )))
-                                   rtn))
-                                 ;; (m "button"
-                                 ;;    { onclick: (#> (console.log "CLICKEDZ")
-                                 ;;                   (|> (click-hist)
-                                 ;;                       (.push "thing"))) }
-                                 ;;    "click me!")
-                                 )))})
- (m.mount (document.getElementById "control-container")
-          ui))
+;; housekeeping
+(when (not (fs.existsSync __data-dir-path))
+      (fs.mkdirSync __data-dir-path))
+
 
 (var Dynamic { exec: (#(channel arg)
                        (var func (get Dynamic channel))
@@ -96,72 +29,15 @@
            (.push locater))
        (m.endComputation)))
 
+
+(var click-hist (m.prop []))
+(set window 'click-hist click-hist)
 (set window 'Dynamic Dynamic)
 
 
-(var control-state (m.prop { 'session-list: ["a" "b" "c"]
-                             
-                            }))
-(scoped
- (def action-list-view ()
-      (scoped
-       (var rtn [])
-       (each (locater i) (click-hist)
-             (rtn.push
-              (m "li"
-                 (m "div"
-                    (m "span"
+
 (var control-state {session-list: (m.prop [])
                     active-session: (m.prop)})
-
-;; yaml based data control
-(var jsyaml (require "js-yaml")
-     fs (require "fs")
-     electron (require "electron")
-     DATA-DIR "data"
-     __data-dir-path (|> (path.join global.__dirname DATA-DIR)
-                         (path.resolve)))
-
-                    (m "button"
-                       { style: { margin: "0.2em"
-                                  width: "1.3em"
-                                  height: "1.3em"
-                                  lineHeight: "1.3em"
-                                  color: "white"
-                                  align: "center"
-                                  textAlign: "center"
-                                  verticalAlign: "middle"
-                                  borderRadius: "3px"
-                                  backgroundColor: "red" }
-                         onclick: (#>
-                                   (var head (|> (click-hist)
-                                                 (.slice 0 i))
-                                        tail (|> (click-hist)
-                                                 (.slice (+ 1 i))))
-                                   (click-hist (head.concat tail))) }
-                       (m "i" { class: "fa fa-times" } ))
-                    (m "button"
-                       { onclick: (#>
-                                   (var exec-string
-                                        (if (or (= locater.tag "button")
-                                                (= locater.tag "a")
-                                                (and (= locater.tag "input")
-                                                     (or (= locater.type "submit")
-                                                         (= locater.type "button"))))
-                                            (+ "common.click_selector('" locater.selector "')")
-                                            null
-                                            ;; (+ "common.fire_event_on('" locater.selector "', 'Click')")
-                                            ))
-                                   (when exec-string
-                                         (|> (get_webview)
-                                             (execjs
-                                              exec-string)))
-                                   ) }
-                       (JSON.stringify locater)))
-
-;; housekeeping
-(when (not (fs.existsSync __data-dir-path))
-      (fs.mkdirSync __data-dir-path))
 
 (fs.readdir
  __data-dir-path
@@ -179,14 +55,229 @@
                     (tap (set 'filename fname)))))))
    (m.endComputation)))
 
-                 )))
-       rtn))
 
- (var ui { controller: (#>
-                        (console.info "in controller")
-                        { })
+(comment
+ (DB.find {$exists: "session"}
+          (#(err, docs)
+            (when docs
+                  (var state (control-state))
+                  (m.startComputation)
+                  (set state 'session-list ["a" "b"])
+                  (m.endComputation)
+                  (console.log docs)
+                  ))))
+
+(db.load)
+
+(def identity (x) x)
+
+(scoped
+ (def make-session (url name)
+      {url: url
+       name: name
+       history: []
+       })
+ (def maybe-get (obj attr)
+      (if obj
+          (get obj attr)
+          null))
+ (var ui-state {selected-tab: (m.prop 'saved-urls)})
+
+ (def render-session-list (session-list)
+      (var asess (control-state.active-session)
+           td-style { border: "1px solid gray"
+                     padding: "0.5em" }
+           ;; key
+           ;; use 2nd as header if present
+           ;; use last as renderer if a function
+           hdr-list [['history
+                      "# actions"
+                      (#(hist)
+                        (+ ""
+                           (get hist 'length)
+                           " actions"))]
+                     ['name]
+                     ['url]
+                     ['filename]
+                     ])
+      ["table"
+       {style: {border-collapse: "collapse"
+                border: "1px solid black"
+                width: "100%"
+                padding: "0.5em"}
+        }
+       ["tr"
+        (mapcar (#(hdr)
+                  ["th" (if (typeof (= "string" (second hdr)))
+                            (second hdr)
+                            (first hdr))])
+                hdr-list)]
+       (mapcar (#(sess)
+                 ["tr"
+                  {style: {border: "1px solid gray"
+                           background: (if (= sess.filename
+                                              (maybe-get asess 'filename))
+                                           "yellow"
+                                           "")}
+                   onclick: (#>
+                             (control-state.active-session sess)
+                             (ui-state.selected-tab 'action-list))
+                   }
+                  (mapcar
+                   (#(hdr)
+                     (var key (first hdr)
+                          maybe-func (last hdr)
+                          renderer (if (= "function" (typeof maybe-func))
+                                       maybe-func
+                                       identity))
+                     ["td"
+                      { style: td-style }
+                      (renderer (get sess key))])
+                   hdr-list)])
+               session-list)])
+
+ (def action-list-item (locater i)
+      ["li"
+       ["div"
+        ["button"
+         { style: { margin: "0.2em"
+                   width: "1.3em"
+                   height: "1.3em"
+                   lineHeight: "1.3em"
+                   color: "white"
+                   align: "center"
+                   textAlign: "center"
+                   verticalAlign: "middle"
+                   borderRadius: "3px"
+                   backgroundColor: "red" }
+          onclick: (#>
+                    (var head (|> (click-hist)
+                                  (.slice 0 i))
+                         tail (|> (click-hist)
+                                  (.slice (+ 1 i))))
+                    (click-hist (head.concat tail))) }
+         ["i" { class: "fa fa-times" } ]]
+        ["button"
+         { onclick: (#>
+                     (var exec-string
+                          (if (or (= locater.tag "button")
+                                  (= locater.tag "a")
+                                  (and (= locater.tag "input")
+                                       (or (= locater.type "submit")
+                                           (= locater.type "button"))))
+                              (+ "common.click_selector('" locater.selector "')")
+                              null
+                              ;; (+ "common.fire_event_on('" locater.selector "', 'Click')")
+                              ))
+                     (when exec-string
+                           (|> (get_webview)
+                               (execjs
+                                exec-string)))
+                     ) }
+         (JSON.stringify locater)]]])
+ (def action-list-view ()
+      (var sess (control-state.active-session))
+      (if sess
+          ["div"
+           (if sess.name
+               ["h1" sess.name]
+               "")
+           ["hr"]
+           ["a"
+            {style: {margin: "0.2em"
+                     padding: "0.1em"
+                     border: "1px solid blue"
+                     background: "lightblue"
+                     border-radius: "4px"}
+             onclick: (#>
+                       )}
+            sess.url]
+           ["hr"]
+           ["ol"
+            {style: {margin: "0.5em"
+                     padding: "0.5em"}}
+            (mapcar action-list-item sess.history)]]))
+
+ (var ui {controller: (#>
+                       (console.info "in controller")
+                       { })
+          tab-def: {saved-urls: {label: "saved urls"
+
+                                 ;; find out nicer way to DRY
+                                 bare-state: {name: null
+                                              url: null}
+                                 state: (m.prop {name: null
+                                                 url: null})
+                                 render: (#>
+                                          (var self this)
+                                          [ ["b" "new session"]
+                                           ["hr"]
+                                           ["div"
+                                            ["div"
+                                             ["label"
+                                              ["input"
+                                               { type: "text"
+                                                placeholder: "url"
+                                                size: 40
+                                                onchange: (#(evt)
+                                                            (var cur-state (self.state))
+                                                            (set cur-state 'url evt.target.value)
+                                                            (self.state cur-state)
+                                                            )} ]
+                                              "session url" ]]
+                                            ["div"
+                                             ["label"
+                                              ["input"
+                                               { type: "text"
+                                                placeholder: "name"
+                                                size: 40
+                                                onchange: (#(evt)
+                                                            (var cur-state (self.state))
+                                                            (set cur-state 'name evt.target.value)
+                                                            (self.state cur-state)
+                                                            )}]
+                                              "session name (optional)"]]
+                                            ["div"
+                                             ["button"
+                                              {onclick: (#>
+                                                         (var lstate (self.state)
+                                                              url (get lstate 'url)
+                                                              name (get lstate 'name))
+                                                         (when (and url name)
+                                                               (var new-session (make-session url name))
+                                                               (set new-session 'filename
+                                                                    (|> (new Date)
+                                                                        (.toISOString)
+                                                                        (.substring 0 10)
+                                                                        (+ "_"
+                                                                           (.replace (get new-session 'url)
+                                                                                     (regex "^(.+://)")
+                                                                                     "")
+                                                                           ".yml")))
+                                                               (m.startComputation)
+                                                               (self.state self.bare-state)
+                                                               (|> (control-state.session-list)
+                                                                   (.push new-session))
+                                                               (control-state.active-session
+                                                                new-session)
+                                                               (m.endComputation))
+                                                         )}
+                                              "start new session"]]
+                                            ]
+                                           ["hr"]
+                                           ["b" "sessions:"]
+                                           ["hr"]
+                                           (render-session-list
+                                            (control-state.session-list)
+                                            )]
+                                          )
+                                 }
+                    action-list: {label: "action list"
+                                  render: action-list-view
+                                  
+                                  }}
            view: (#(ctrl)
-                   (var self this
+                   (var self this ;; self.view is the view object here, for example
                         table (|> (miccup
                                    ["div"
                                      { style: { position: "relative"
@@ -217,12 +308,15 @@
                                      (scoped
                                       ["ul.tab-list"
                                         {  }
-                                        [["li.active"
-                                           {  }
-                                           "saved urls"]
-                                          ["li"
-                                            {  }
-                                            "action list"]]
+                                        (mapcar (#(k i)
+                                                  [(+ "li"
+                                                      (if (= k (ui-state.selected-tab))
+                                                          ".active"
+                                                          ""))
+                                                    { onclick: (#>
+                                                                (ui-state.selected-tab k)) }
+                                                    (get self.tab-def k 'label)])
+                                                (Object.keys self.tab-def))
                                         ])
                                      ["div" { style: { clear: "both" } }]
                                      ["div"
@@ -231,22 +325,11 @@
                                                   color: "black"
                                                   background: "white"
                                                   }}
-                                       ["b" "sessions"]
-                                       ["hr"]
-                                       (scoped
-                                        (mapcar
-                                         (#(session)
-                                           ["div"
-                                             {  }
-                                             (+ " - " session)])
-                                         (or (get (control-state) 'session-list)
-                                             [])))
-
-                                       ["hr"]
-                                       ["div"
-                                         (action-list-view)]
-                                       ]
-                                     ])
-                                  (tap (console.log)))))})
+                                      ;; note function call
+                                      ((|> (ui-state.selected-tab)
+                                           (get self.tab-def #)
+                                           (get 'render)))
+                                      ]
+                                     ]))))})
  (m.mount (document.getElementById "control-container")
           ui))
