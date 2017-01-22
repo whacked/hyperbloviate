@@ -81,8 +81,8 @@
                          (ipcRenderer.sendToHost
                           Const.WEBVIEW_ELEMENT_CLICK
                           (JSON.stringify
-                           { x: evt.clientX
-                             y: evt.clientY
-                             tag: (evt.target.tagName.toLowerCase)
-                             type: (evt.target.type.toLowerCase)
-                             selector: (csg.getSelector tgt)}))))
+                           {x: evt.clientX
+                            y: evt.clientY
+                            tag: (evt.target.tagName.toLowerCase)
+                            type: (evt.target.type.toLowerCase)
+                            selector: (csg.getSelector tgt)}))))

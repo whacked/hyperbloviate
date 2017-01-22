@@ -133,24 +133,28 @@
  (def action-list-item (locater i)
       ["li"
        ["div"
-        ["button"
-         { style: { margin: "0.2em"
-                   width: "1.3em"
-                   height: "1.3em"
-                   lineHeight: "1.3em"
-                   color: "white"
-                   align: "center"
-                   textAlign: "center"
-                   verticalAlign: "middle"
-                   borderRadius: "3px"
-                   backgroundColor: "red" }
-          onclick: (#>
-                    (var head (|> (click-hist)
-                                  (.slice 0 i))
-                         tail (|> (click-hist)
-                                  (.slice (+ 1 i))))
-                    (click-hist (head.concat tail))) }
-         ["i" { class: "fa fa-times" } ]]
+        (scoped
+         ;; delete button
+         (var asess (control-state.active-session)
+              cur-hist asess.history)
+         ["button"
+          { style: {margin: "0.2em"
+                    width: "1.3em"
+                    height: "1.3em"
+                    lineHeight: "1.3em"
+                    color: "white"
+                    align: "center"
+                    textAlign: "center"
+                    verticalAlign: "middle"
+                    borderRadius: "3px"
+                    backgroundColor: "red" }
+           onclick: (#>
+                     (var head (cur-hist.slice 0 i)
+                          tail (cur-hist.slice (+ 1 i)))
+                     (set asess 'history (head.concat tail))
+                     (set asess 'is-dirty true)
+                     (control-state.active-session asess)) }
+          ["i" { class: "fa fa-times" } ]])
         ["button"
          { onclick: (#>
                      (var exec-string
@@ -182,9 +186,9 @@
                      padding: "0.1em"
                      border: "1px solid blue"
                      background: "lightblue"
-                     border-radius: "4px"}
-             onclick: (#>
-                       )}
+                     border-radius: "4px"
+                     cursor: "pointer"}
+             onclick: (#> (set-webview-url sess.url))}
             sess.url]
            ["hr"]
            ["ol"
