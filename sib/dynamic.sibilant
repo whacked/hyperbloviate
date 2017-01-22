@@ -17,27 +17,23 @@
 (when (not (fs.existsSync __data-dir-path))
       (fs.mkdirSync __data-dir-path))
 
-
-(var Dynamic { exec: (#(channel arg)
-                       (var func (get Dynamic channel))
-                       (when func (func arg))) })
-(set Dynamic Const.WEBVIEW_ELEMENT_CLICK
-     (#(js)
-       (var locater (JSON.parse js))
-       (m.startComputation)
-       (|> (click-hist)
-           (.push locater))
-       (m.endComputation)))
-
-
-(var click-hist (m.prop []))
-(set window 'click-hist click-hist)
-(set window 'Dynamic Dynamic)
-
-
-
 (var control-state {session-list: (m.prop [])
                     active-session: (m.prop)})
+
+(var WebViewDriver { exec: (#(channel arg)
+                       (var func (get WebViewDriver channel))
+                       (when func (func arg))) })
+(set WebViewDriver Const.WEBVIEW_ELEMENT_CLICK
+     (#(js)
+       (var asess (control-state.active-session))
+       (if (not asess)
+           (alert "no active session")
+           (scoped
+            (var locater (JSON.parse js))
+            (m-transact!
+             (|> asess.history
+                 (.push locater)))))))
+(set window 'WebViewDriver WebViewDriver)
 
 (fs.readdir
  __data-dir-path
