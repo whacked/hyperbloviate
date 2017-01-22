@@ -29,5 +29,34 @@
           save: (#>
                  (DB.insert { url: (get-webview-url)
                               'click-history: (click-hist) }))
-         }
-     )
+          }
+     jsyaml (require "js-yaml"))
+
+(def miccup (hiccup)
+     (if (not (Array.isArray hiccup))
+         hiccup
+         
+         (empty? hiccup)
+         hiccup
+
+         (Array.isArray (first hiccup))
+         ;; nested array
+         (scoped
+          (var out [])
+          (each (hh i) hiccup
+                (when (< 0 hh.length)
+                      (out.push (miccup hh))))
+          out)
+         
+         ;; normal hiccup
+         (scoped
+          (var tag (first hiccup)
+               maybe-attr (second hiccup)
+               has-attr? (and (= (typeof maybe-attr) "object")
+                              (not (Array.isArray maybe-attr)))
+               attr (if has-attr? maybe-attr {})
+               remainder-start (if has-attr? 2 1)
+               out [tag attr])
+          (each (hh i) (hiccup.slice remainder-start)
+                (out.push (miccup hh)))
+          (apply m out))))
