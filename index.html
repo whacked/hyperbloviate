@@ -104,6 +104,29 @@
             });
             */
 
+        callback_cache = {};
+        function register_callback(channel, func) {
+            callback_cache[channel] = function(arg) {
+                console.log("removing callback ...");
+                callback_cache[channel] = null;
+                console.log("calling callback ...");
+                func(arg);
+                console.log("done ...");
+            }
+        }
+        dispatcher_mapping = {};
+        function ipc_event_dispatcher(evt) {
+            console.log("IPC EVENT: " + evt.channel);
+            console.log(evt.args);
+            if(callback_cache[evt.channel]) {
+                console.log("dispatching to registered callback");
+                callback_cache[evt.channel].apply(null, evt.args);
+            }
+            if(dispatcher_mapping[evt.channel]) {
+                dispatcher_mapping[evt.channel].apply(null, evt.args);
+            }
+        }
+
         var checkjq = setInterval(function() {
             if(!$) {
                 console.log('non');
@@ -172,28 +195,6 @@
                     }
                 }
 
-                callback_cache = {};
-                function register_callback(channel, func) {
-                    callback_cache[channel] = function(arg) {
-                        console.log("removing callback ...");
-                        callback_cache[channel] = null;
-                        console.log("calling callback ...");
-                        func(arg);
-                        console.log("done ...");
-                    }
-                }
-                dispatcher_mapping = {};
-                function ipc_event_dispatcher(evt) {
-                    console.log("IPC EVENT: " + evt.channel);
-                    console.log(evt.args);
-                    if(callback_cache[evt.channel]) {
-                        console.log("dispatching to registered callback");
-                        callback_cache[evt.channel].apply(null, evt.args);
-                    }
-                    if(dispatcher_mapping[evt.channel]) {
-                        dispatcher_mapping[evt.channel].apply(null, evt.args);
-                    }
-                }
                 dispatcher_mapping[Const.WEBVIEW_ELEMENT_CLICK] = function(arg) {
                     window.WebViewDriver.exec(Const.WEBVIEW_ELEMENT_CLICK, arg);
                 };
@@ -286,8 +287,9 @@
             }
         }
 
-        function get_webview_html(wv_idx) {
-            execjs(get_webview(wv_idx), "document.body.innerHTML");
+        function get_webview_html(wv_idx, cb) {
+            cb = cb || function(x) { console.log(x) };
+            execjs(get_webview(wv_idx), "document.body.innerHTML", cb);
         }
 
         function clear_webview_event_listeners(wv_idx) {
@@ -310,7 +312,7 @@
         }
 
         function sibilant_handler(obj, callback) {
-            console.log("%c GOT SIBLANT ", "color:lime;background:black;");
+            console.log("%c GOT SIBILANT ", "color:lime;background:black;");
             if(Conf.outputEval) {
                 console.log('=============================');
                 console.log(obj);
