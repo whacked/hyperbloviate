@@ -124,7 +124,8 @@
       name: name
       history: []
       })
-(var ui-state {selected-tab: (m.prop 'saved-urls)})
+(var ui-state {selected-tab: (m.prop 'saved-urls)
+               scratch-view: (m.prop)})
 
 (def render-session-list (session-list)
      (var asess (control-state.active-session)
@@ -352,9 +353,11 @@
                                          )
                                 }
                    action-list: {label: "action list"
-                                 render: action-list-view
-                                 
-                                 }}
+                                 render: action-list-view}
+
+                   stratch: {label: "stratch"
+                             render: (#>
+                                      (miccup (ui-state.scratch-view)))}}
          view: (#(ctrl)
                  (var self this ;; self.view is the view object here, for example
                       table (|> (miccup
