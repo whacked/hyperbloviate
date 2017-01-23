@@ -11,3 +11,19 @@
      (each (o i) list
            (rtn.push (func o i)))
      rtn)
+
+(def range ()
+     ;; arguments is a tricky structure! >:-(
+     ;; (get arguments 1) gives undefined
+     (var arglist (Array.prototype.slice.call arguments)
+          beg (if (= 2 arglist.length)
+                  (get arglist 0)
+                  0)
+          end (if (= 2 arglist.length)
+                  (get arglist 1)
+                  (get arglist 0))
+          out [])
+     (while (< beg end)
+            (out.push beg)
+            (incr beg))
+     out)
