@@ -1,5 +1,7 @@
 node_modules
 *.map
+\#*#
+.#*
 
 # sibilant generated
 sib/*.js
