@@ -78,13 +78,12 @@
 (var jsyaml (require "js-yaml")
      fs (require "fs")
      electron (require "electron")
-     DATA-DIR "data"
-     __data-dir-path (|> (path.join global.__dirname DATA-DIR)
+     __session-dir-path (|> (path.join global.__dirname "session")
                          (path.resolve)))
 
 ;; housekeeping
-(when (not (fs.existsSync __data-dir-path))
-      (fs.mkdirSync __data-dir-path))
+(when (not (fs.existsSync __session-dir-path))
+      (fs.mkdirSync __session-dir-path))
 
 (var control-state {session-list: (m.prop [])
                     active-session: (m.prop)})
@@ -105,7 +104,7 @@
 (set window 'WebViewDriver WebViewDriver)
 
 (fs.readdir
- __data-dir-path
+ __session-dir-path
  (#(err file-list)
    (var re-yml (regex "yml$"))
    (m-transact!
@@ -114,7 +113,7 @@
          (.filter (#(fname)
                     (fname.match re-yml)))
          (.map (#(fname)
-                 (|> (path.join __data-dir-path fname)
+                 (|> (path.join __session-dir-path fname)
                      (fs.readFileSync "utf-8")
                      (jsyaml.safeLoad)
                      (tap (set 'filename fname))))))))))
@@ -267,7 +266,17 @@
                                           iter-sess)))
                                (control-state.session-list new-session-list)
                                (control-state.active-session sess)
-                               (var filepath (path.join __data-dir-path sess.filename))
+                               (var filepath (path.join __session-dir-path sess.filename))
+                               (fs.writeFile
+                                filepath
+                                (jsyaml.safeDump sess)
+                                (#(err)
+                                  (if err
+                                      (alert (+ "file write failed!\n"
+                                                (.toString err)))
+                                      (console.log (+ "wrote: " filepath)))))
+                               ))}
+                   "save!"]])]]))
                                (fs.writeFile
                                 filepath
                                 (jsyaml.safeDump sess)
