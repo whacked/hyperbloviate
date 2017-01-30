@@ -74,18 +74,26 @@
                 (out.push (miccup hh)))
           (apply m out))))
 
+(def resolve-asset-dir (dirname)
+     (|> (path.join global.__dirname dirname)
+         (path.resolve)))
+
 ;; yaml based data control
 (var jsyaml (require "js-yaml")
      fs (require "fs")
      electron (require "electron")
-     __session-dir-path (|> (path.join global.__dirname "session")
-                         (path.resolve)))
+     __session-dir-path (resolve-asset-dir "session")
+     __handler-dir-path (resolve-asset-dir "handler")
+     __plugin-dir-name "plugin"
+     __plugin-dir-path (resolve-asset-dir __plugin-dir-name))
 
 ;; housekeeping
 (when (not (fs.existsSync __session-dir-path))
       (fs.mkdirSync __session-dir-path))
 
 (var control-state {session-list: (m.prop [])
+                    handler-mapping: (m.prop {})
+                    plugin-mapping: (m.prop {})
                     active-session: (m.prop)})
 
 (var WebViewDriver { exec: (#(channel arg)
@@ -101,22 +109,48 @@
             (asess.history.push locater)
             (set asess 'is-dirty true)
             (control-state.active-session asess)))))
+
 (set window 'WebViewDriver WebViewDriver)
 
-(fs.readdir
- __session-dir-path
- (#(err file-list)
-   (var re-yml (regex "yml$"))
-   (m-transact!
-    (control-state.session-list
-     (|> file-list
-         (.filter (#(fname)
-                    (fname.match re-yml)))
-         (.map (#(fname)
-                 (|> (path.join __session-dir-path fname)
-                     (fs.readFileSync "utf-8")
-                     (jsyaml.safeLoad)
-                     (tap (set 'filename fname))))))))))
+(def load-all-sessions! ()
+     (fs.readdir
+      __session-dir-path
+      (#(err file-list)
+        (var re-yml (regex "yml$"))
+        (m-transact!
+         (control-state.session-list
+          (|> file-list
+              (.filter (#(fname)
+                         (fname.match re-yml)))
+              (.map (#(fname)
+                      (|> (path.join __session-dir-path fname)
+                          (fs.readFileSync "utf-8")
+                          (jsyaml.safeLoad)
+                          (tap (set 'filename fname)))))))))))
+(load-all-sessions!)
+
+(def load-all-plugins! ()
+     (fs.readdir
+      __plugin-dir-path
+      (#(err file-list)
+        (var out {})
+        (each (fname i) file-list
+              (var spl (fname.split ".")
+                   basename (if (< 1 spl.length)
+                                (fname.substring
+                                 0 (- fname.length 1
+                                      (get (last spl) 'length))))
+                   ext (if (= 1 spl.length)
+                           null
+                           (last spl)))
+              (when (= ext "js")
+                    (if (get out basename)
+                        (console.log "skipping: " fname "because already loaded")
+                        (set out basename
+                             (require (+ "./" (path.join __plugin-dir-name fname)))))))
+        (m-transact!
+         (control-state.plugin-mapping out)))))
+(load-all-plugins!)
 
 (def make-session (url name)
      {url: url
@@ -277,16 +311,17 @@
                                       (console.log (+ "wrote: " filepath)))))
                                ))}
                    "save!"]])]]))
-                               (fs.writeFile
-                                filepath
-                                (jsyaml.safeDump sess)
-                                (#(err)
-                                  (if err
-                                      (alert (+ "file write failed!\n"
-                                                (.toString err)))
-                                      (console.log (+ "wrote: " filepath)))))
-                               ))}
-                   "save!"]])]]))
+
+(def plugin-list-view ()
+     ["div"
+      ["ol"
+       {style: {margin: "0.5em"
+                padding: "0.5em"}}
+       (|> (control-state.plugin-mapping)
+           (Object.keys)
+           (mapcar (#(k)
+                     ["li" k])
+                   #))]])
 
 (var ui {controller: (#>
                       (console.info "in controller")
@@ -363,6 +398,9 @@
                                 }
                    action-list: {label: "action list"
                                  render: action-list-view}
+
+                   plugin-list: {label: "plugin list"
+                                  render: plugin-list-view}
 
                    stratch: {label: "stratch"
                              render: (#>
