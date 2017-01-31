@@ -308,7 +308,12 @@
                 console.log('=============================');
             }
             var rtn = eval.apply(null, [obj]);
-            callback(undefined, rtn);
+            try {
+                callback(undefined, rtn);
+            } catch(err) {
+                console.warn(err);
+                callback(undefined, ["there was an error in the return"]);
+            }
         }
 
         function sibilant_handler(obj, callback) {
@@ -319,7 +324,12 @@
                 console.log('=============================');
             }
             var rtn = eval.apply(null, [sibilant.sibilize(obj)]);
-            callback(undefined, rtn);
+            try {
+                callback(undefined, rtn);
+            } catch(err) {
+                console.warn(err);
+                callback(undefined, ["there was an error in the return"]);
+            }
         }
 
         var JRPC_PORT = 8002;
