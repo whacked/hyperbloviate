@@ -402,7 +402,7 @@
                    plugin-list: {label: "plugin list"
                                   render: plugin-list-view}
 
-                   stratch: {label: "stratch"
+                   scratch: {label: "scratch"
                              render: (#>
                                       (miccup (ui-state.scratch-view)))}}
          view: (#(ctrl)
