@@ -74,6 +74,40 @@
                 (out.push (miccup hh)))
           (apply m out))))
 
+(def attr2object (attr)
+     ;; has .name and .value when passed a DOM element.attributes object;
+     ;; does not have .name and .value when passed a style object
+     (var rtn {})
+     (each (i) (range attr.length)
+           (var key (or (get attr i "name")
+                        (get attr i))
+                val (scoped
+                     (var val-candidate (get attr key))
+                     (or val-candidate.value
+                         val-candidate)))
+           (set rtn key val))
+     rtn)
+
+(def dom2miccup (el)
+     ;; DOM element tree to miccup
+     (if (not el.tagName)
+         el.textContent
+         (scoped
+          (var rtn [(el.tagName.toLowerCase)
+                    (scoped
+                     (var style (attr2object el.style)
+                          attr (attr2object el.attributes))
+                     ;; don't output style if it's empty
+                     (when (< 0 (|> (Object.keys style)
+                                    (get "length")))
+                           (set attr "style" style))
+                     attr)])
+          (each (node i) el.childNodes
+                (rtn.push
+                 (|> (dom2miccup node)
+                     (tap (console.log)))))
+          rtn)))
+
 (def resolve-asset-dir (dirname)
      (|> (path.join global.__dirname dirname)
          (path.resolve)))
