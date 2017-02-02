@@ -74,17 +74,22 @@
                 (out.push (miccup hh)))
           (apply m out))))
 
-(def attr2object (attr)
-     ;; has .name and .value when passed a DOM element.attributes object;
+(def style2object (style)
      ;; does not have .name and .value when passed a style object
      (var rtn {})
+     (each (i) (range style.length)
+           (var key (get style i)
+                val (get style key))
+           (when (!= val "initial")
+            (set rtn key val)))
+     rtn)
+
+(def attr2object (attr)
+     ;; has .name and .value when passed a DOM element.attributes object;
+     (var rtn {})
      (each (i) (range attr.length)
-           (var key (or (get attr i "name")
-                        (get attr i))
-                val (scoped
-                     (var val-candidate (get attr key))
-                     (or val-candidate.value
-                         val-candidate)))
+           (var key (get attr i "name")
+                val (get attr key "value"))
            (set rtn key val))
      rtn)
 
@@ -95,7 +100,7 @@
          (scoped
           (var rtn [(el.tagName.toLowerCase)
                     (scoped
-                     (var style (attr2object el.style)
+                     (var style (style2object el.style)
                           attr (attr2object el.attributes))
                      ;; don't output style if it's empty
                      (when (< 0 (|> (Object.keys style)
