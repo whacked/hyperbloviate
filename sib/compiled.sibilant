@@ -46,6 +46,7 @@
          (.getAttribute "src")))
 
 (def miccup (hiccup)
+     ;; hiccup to mithril
      (if (not (Array.isArray hiccup))
          hiccup
          
@@ -74,6 +75,39 @@
                 (out.push (miccup hh)))
           (apply m out))))
 
+(def jq-hiccup (hiccup)
+     ;; hiccup to DOM via jquery
+     (if (or (not (Array.isArray hiccup))
+             (empty? hiccup))
+         hiccup
+         
+         (Array.isArray (first hiccup))
+         ;; nested array
+         (with-return-var
+          out []
+          (each (hh i) hiccup
+                (when (< 0 hh.length)
+                      (out.push (jq-hiccup hh)))))
+
+         ;; normal hiccup
+         (scoped
+          (var tag (first hiccup)
+               maybe-attr (second hiccup)
+               has-attr? (and (= (typeof maybe-attr) "object")
+                              (not (Array.isArray maybe-attr)))
+               attr (if has-attr? maybe-attr {})
+               style (or (get attr "style") {}))
+          (delete (get attr "style"))
+          (var out (|> ($ (document.createElement tag))
+                       (.attr attr)
+                       (.css style))
+               i (if has-attr? 2 1))
+          (while (< i hiccup.length)
+                 (var hh (get hiccup i))
+                 (incr i)
+                 (out.append (jq-hiccup hh)))
+          out)))
+
 (def style2object (style)
      ;; does not have .name and .value when passed a style object
      (var rtn {})
@@ -95,8 +129,10 @@
 
 (def dom2miccup (el)
      ;; DOM element tree to miccup
-     (if (not el.tagName)
-         el.textContent
+     (if (not el) el
+         (not el.tagName)  el.textContent
+
+         true
          (scoped
           (var rtn [(el.tagName.toLowerCase)
                     (scoped
@@ -108,9 +144,7 @@
                            (set attr "style" style))
                      attr)])
           (each (node i) el.childNodes
-                (rtn.push
-                 (|> (dom2miccup node)
-                     (tap (console.log)))))
+                (rtn.push (dom2miccup node)))
           rtn)))
 
 (def resolve-asset-dir (dirname)
