@@ -27,3 +27,8 @@
             (out.push beg)
             (incr beg))
      out)
+
+(def deep-copy (obj)
+     (|> obj
+         (JSON.stringify)
+         (JSON.parse)))
