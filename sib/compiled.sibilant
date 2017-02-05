@@ -45,54 +45,54 @@
      (|> (get_webview wv-idx)
          (.getAttribute "src")))
 
-(def miccup (hiccup)
-     ;; hiccup to mithril
-     (if (not (Array.isArray hiccup))
-         hiccup
+(def m-miccup (miccup)
+     ;; miccup to mithril
+     (if (not (Array.isArray miccup))
+         miccup
          
-         (empty? hiccup)
-         hiccup
+         (empty? miccup)
+         miccup
 
-         (Array.isArray (first hiccup))
+         (Array.isArray (first miccup))
          ;; nested array
          (scoped
           (var out [])
-          (each (hh i) hiccup
+          (each (hh i) miccup
                 (when (< 0 hh.length)
-                      (out.push (miccup hh))))
+                      (out.push (m-miccup hh))))
           out)
          
-         ;; normal hiccup
+         ;; normal miccup
          (scoped
-          (var tag (first hiccup)
-               maybe-attr (second hiccup)
+          (var tag (first miccup)
+               maybe-attr (second miccup)
                has-attr? (and (= (typeof maybe-attr) "object")
                               (not (Array.isArray maybe-attr)))
                attr (if has-attr? maybe-attr {})
                remainder-start (if has-attr? 2 1)
                out [tag attr])
-          (each (hh i) (hiccup.slice remainder-start)
-                (out.push (miccup hh)))
+          (each (hh i) (miccup.slice remainder-start)
+                (out.push (m-miccup hh)))
           (apply m out))))
 
-(def jq-hiccup (hiccup)
-     ;; hiccup to DOM via jquery
-     (if (or (not (Array.isArray hiccup))
-             (empty? hiccup))
-         hiccup
+(def jq-miccup (miccup)
+     ;; miccup to DOM via jquery
+     (if (or (not (Array.isArray miccup))
+             (empty? miccup))
+         miccup
          
-         (Array.isArray (first hiccup))
+         (Array.isArray (first miccup))
          ;; nested array
          (with-return-var
           out []
-          (each (hh i) hiccup
+          (each (hh i) miccup
                 (when (< 0 hh.length)
-                      (out.push (jq-hiccup hh)))))
+                      (out.push (jq-miccup hh)))))
 
-         ;; normal hiccup
+         ;; normal miccup
          (scoped
-          (var tag (first hiccup)
-               maybe-attr (second hiccup)
+          (var tag (first miccup)
+               maybe-attr (second miccup)
                has-attr? (and (= (typeof maybe-attr) "object")
                               (not (Array.isArray maybe-attr)))
                attr (if has-attr? maybe-attr {})
@@ -102,10 +102,10 @@
                        (.attr attr)
                        (.css style))
                i (if has-attr? 2 1))
-          (while (< i hiccup.length)
-                 (var hh (get hiccup i))
+          (while (< i miccup.length)
+                 (var hh (get miccup i))
                  (incr i)
-                 (out.append (jq-hiccup hh)))
+                 (out.append (jq-miccup hh)))
           out)))
 
 (def style2object (style)
@@ -477,7 +477,7 @@
 
                    scratch: {label: "scratch"
                              render: (#>
-                                      (miccup (ui-state.scratch-view)))}}
+                                      (m-miccup (ui-state.scratch-view)))}}
          view: (#(ctrl)
                  (var self this ;; self.view is the view object here, for example
                       table (|> (miccup
