@@ -5,3 +5,10 @@
           (m.startComputation)
           ...@body
           (m.endComputation))))
+
+(macro with-return-var (rtn init ...body)
+       (^*scoped-without-return
+        `(do
+          (var @rtn @init)
+          ...@body
+          @rtn)))
