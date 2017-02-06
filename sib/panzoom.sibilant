@@ -1,0 +1,99 @@
+(scoped
+ (var $main ($ "#control-container > div > div:nth-child(4)"))
+ (|> $main
+     (.empty)
+     (.append
+      (jq-miccup
+       ["section"
+        {id: "focal"
+         style: {border: "1px solid orange"}}
+        ["h1" "use mousewheel zoom"]
+        ["div"
+         {class: "panzoom-parent"
+          style: {border:"1px solid green"}}
+         ]
+        ["div"
+         {class:"buttons"}
+         ["input"
+          {type: "range"
+           class: "zoom-range"}]
+         ["button"
+          {class: "reset"}
+          "reset"]
+         ]])))
+
+ (var svg
+      (jq-miccup
+       ["svg"
+        {width: 900
+         height: 900
+         version: "1.1"
+         baseProfile: "basic"
+         viewBox: "0 0 900 900"
+         xmlns: "http://www.w3.org/2000/svg"
+         style: {background: "beige"}
+         }
+
+        (mapcar
+         (#(spec i)
+           (var padding 20
+                base 100
+                topx (#(val)
+                       (+ (* (+ padding base) val))))
+           ["foreignObject"
+            {class: "pzblock"
+             x: (topx spec.x)
+             y: (topx spec.y)
+             width: (topx spec.width)
+             height: (topx spec.height)
+             xmlns: "http://www.w3.org/2000/svg"
+             }
+            ["body"
+             {xmlns: "http://www.w3.org/1999/xhtml"
+              style: {height: (+ (topx spec.height) "px")
+                      border: "2px solid green"
+                      }}
+             ["div"
+              {style: {border: "4px solid orange"}}
+              ["h1" (+ "EMBED! " i)]
+              "some content!"
+              ]
+             ]])
+         [{x: 0 y: 0 width: 2 height: 2}
+          {x: 3 y: 1 width: 1 height: 2}
+          {x: 4 y: 1 width: 1 height: 1}
+          {x: 2 y: 3 width: 3 height: 1}
+          {x: 1 y: 4 width: 1 height: 1}
+          {x: 1 y: 3 width: 1 height: 1}])
+        ]
+       ))
+ (|> ($ ".panzoom-parent")
+     (.append svg))
+
+ (var $section ($ ".panzoom-parent")
+      $panzoom (|> $section
+                   (.find ".pzblock")
+                   (.panzoom
+                    {$zoomRange: ($section.find ".zoom-range")
+                     $reset: ($section.find ".reset")
+                     minScale: 0.1
+                     ;; will not work with SVG >:-(
+                     ;; contain: "automatic"
+                     })))
+
+ (|> $panzoom
+     (.parent)
+     (.on "mousewheel.focal"
+          (#(e)
+            (e.preventDefault)
+            (var delta (or e.delta e.originalEvent.wheelDelta)
+                 zoom-out (if delta
+                              (< delta 0)
+                              (> e.originalEvent.deltaY 0)))
+            ($panzoom.panzoom
+             "zoom" zoom-out
+             {increment: 0.05,
+              animate: false,
+              focal: e}))))
+ 
+ (assign window.pz $panzoom))
