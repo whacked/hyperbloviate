@@ -98,7 +98,10 @@
                attr (if has-attr? maybe-attr {})
                style (or (get attr "style") {}))
           (delete (get attr "style"))
-          (var out (|> ($ (document.createElement tag))
+          (var out (|> ($ (if attr.xmlns
+                              (document.createElementNS
+                               attr.xmlns tag)
+                              (document.createElement tag)))
                        (.attr attr)
                        (.css style))
                i (if has-attr? 2 1))
