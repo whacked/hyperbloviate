@@ -480,7 +480,7 @@
                                       (m-miccup (ui-state.scratch-view)))}}
          view: (#(ctrl)
                  (var self this ;; self.view is the view object here, for example
-                      table (|> (miccup
+                      table (|> (m-miccup
                                  ["div"
                                   {style: {position: "relative"
                                            float: "left"
