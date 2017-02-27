@@ -1,0 +1,160 @@
+(scoped
+ ;; adaptive button panel test
+ (def gen-panel (label action)
+      {label: label
+       xlen: 1
+       ylen: 1
+       action: action })
+
+ ;; this is what determines visibility
+ (def calculate-strength (item-key world)
+      ;; naive calculator, take previous usage time;
+      ;; if within 7 days, return 1,
+      ;; else linearly return 1~0 based on 7 = 1, 0 = 21 days
+
+      ;; this should give this history array
+      (var now (.getTime (new Date))
+           latest-usage (if (world.get item-key)
+                            (apply Math.max (|> (world.get item-key)
+                                                ))
+                            now)
+           dday (/ (- now latest-usage) 86400.0))
+      (if (< dday 7) 1
+          (< 21 dday) 0
+          true (scoped
+                (- 1 (/ (- dday 7) 14)))))
+
+ (var adaptive-ui {panel-x: 4
+                   panel-y: 4
+                   panel-w: 40
+                   panel-h: 40
+                   panel-border-width: 2
+                   panel-margin: 3
+                   
+                   world: (m.prop
+                           (Immutable.fromJS
+                            (with-return-var
+                             out {}
+                             (def Event (time)
+                                  {time: (or time (.getTime (new Date)))})
+
+                             (each (item) [{action: "C"
+                                            history: [(Event
+                                                       (- (.getTime (new Date))
+                                                          (* 86400 4))) ]}
+                                           {action: "D"
+                                            history: [(Event
+                                                       (- (.getTime (new Date))
+                                                          (* 86400 7))) ]}
+                                           {action: "E"
+                                            history: [(Event
+                                                       (- (.getTime (new Date))
+                                                          (* 86400 12))) ]}
+                                           {action: "F"
+                                            history: [(Event
+                                                       (- (.getTime (new Date))
+                                                          (* 86400 18))) ]}
+                                           {action: "G"
+                                            history: [(Event
+                                                       (- (.getTime (new Date))
+                                                          (* 86400 22))) ]}]
+                                   (set out item.action item)))))
+                   controller: (#>
+                                (console.info "in controller")
+                                { list: (m.prop [(gen-panel "A"
+                                                             (#> (browser-page-load "https://ddg.gg")))
+                                                 (gen-panel "B"
+                                                            (#> (browser-page-load "https://example.com")))
+                                                 (gen-panel "C")
+                                                 (gen-panel "D")
+                                                 (gen-panel "E")
+                                                 (gen-panel "F")
+                                                 (gen-panel "G")
+                                                 ])
+                                 })
+                   
+                   render-panel: (#(pnl-data pos)
+                                   (var self this)
+                                   (m "div"
+                                      { style: { position: "absolute"
+                                                left: (+ (get pos 'left) "px")
+                                                top: (+ (get pos 'top) "px")
+                                                width: (+ self.panel-w "px")
+                                                height: (+ self.panel-h "px")
+                                                
+                                                border: (+ self.panel-border-width "px solid #555")
+                                                background: "#333"
+                                                color: "lightgray"
+                                                text-align: "center"
+                                                line-height: (+ self.panel-h "px")
+                                                font-family: "ubuntu"
+
+                                                opacity: (calculate-strength pnl-data.label (self.world))
+                                                }
+
+                                       onclick: (#> (console.info "CLICKED" pnl-data)
+                                                    ;; in this function
+                                                    ;; `this` is the clicked element
+                                                    ;; `self` is the `adaptive-ui` object
+                                                    (self.world (|> (self.world)
+                                                                    ((#(cur-world)
+                                                                       (when pnl-data.action
+                                                                             (pnl-data.action cur-world))
+                                                                       cur-world))
+                                                                    (.update-in
+                                                                     [pnl-data.label "history"]
+                                                                     (#(history)
+                                                                       (|> (or history (Immutable.List))
+                                                                           (.push (.getTime (new Date))))))))) }
+                                      pnl-data.label))
+
+                   render-panel-list: (#(panel-list)
+                                        (var self this
+                                             rtn [])
+                                        (each (pnl-data i) panel-list
+                                              (scoped
+                                               (var pos { left: (+ self.panel-margin
+                                                                   (* (+ self.panel-w
+                                                                         (* 2 self.panel-border-width)
+                                                                         self.panel-margin)
+                                                                      (mod i self.panel-x)))
+                                                         top: (+ self.panel-margin
+                                                                 (* (+ self.panel-h
+                                                                       (* 2 self.panel-border-width)
+                                                                       self.panel-margin)
+                                                                    (Math.floor (/ i self.panel-x))))
+                                                         })
+                                               (rtn.push (self.render-panel pnl-data pos))))
+                                        rtn)
+                   
+                   view: (#(ctrl)
+                           (var self this
+                                table (m "div.grid"
+                                         { style: { position: "relative"
+                                                   float: "left"
+                                                   background: "#444"
+                                                   padding: "2px"
+                                                   margin: "2px"
+                                                   width: (+ (* (+ self.panel-w
+                                                                   (* 2 self.panel-border-width)
+                                                                   self.panel-margin)
+                                                                self.panel-x)
+                                                             "px")
+                                                   height: (+ (* (+ self.panel-h
+                                                                    (* 2 self.panel-border-width)
+                                                                    self.panel-margin)
+                                                                 self.panel-y)
+                                                              "px")
+                                                   } }
+                                         (self.render-panel-list (ctrl.list))))
+                           (m "div"
+                              [ table
+                               (m "div"
+                                  { style: { font-family: "monospace"
+                                            font-size: "x-small" } }
+                                  [ (JSON.stringify (|> (self.world)
+                                                        (.toJS)) null 2)
+                                   ])
+                               (m "div" { style: "clear:both" })]))})
+ (m.mount document.body
+          adaptive-ui))
