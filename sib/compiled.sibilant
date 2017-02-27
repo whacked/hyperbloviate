@@ -452,8 +452,8 @@
                                                                        (.substring 0 10)
                                                                        (+ "_"
                                                                           (.replace (get new-session 'url)
-                                                                                    (regex "^(.+://)")
-                                                                                    "")
+                                                                                    (regex "^(?:.+://)([^/]+)/?.*")
+                                                                                    "$1")
                                                                           ".yml")))
                                                               (m-transact!
                                                                (self.state self.bare-state)
