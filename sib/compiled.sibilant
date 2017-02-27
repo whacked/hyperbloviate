@@ -476,7 +476,7 @@
                                  render: action-list-view}
 
                    plugin-list: {label: "plugin list"
-                                  render: plugin-list-view}
+                                 render: plugin-list-view}
 
                    scratch: {label: "scratch"
                              render: (#>
@@ -519,7 +519,11 @@
                                             height: "100%"
                                             color: "black"
                                             background: "white"
-                                            }}
+                                            }
+                                    id: (|> (ui-state.selected-tab)
+                                            (get self.tab-def #)
+                                            (get 'label)
+                                            (+ "panel-" #))}
                                    ;; note function call
                                    ((|> (ui-state.selected-tab)
                                         (get self.tab-def #)
