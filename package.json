@@ -4,6 +4,7 @@
   },
   "dependencies": {
     "body-parser": "^1.15.2",
+    "cached-request": "^1.1.1",
     "cheerio": "^0.22.0",
     "chokidar": "^1.6.1",
     "connect": "^3.5.0",

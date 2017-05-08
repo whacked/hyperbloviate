@@ -1,0 +1,12 @@
+;; https://github.com/alltherooms/cached-request
+(var request (require "request")
+     cache-directory "/tmp/request-cache"
+     cached-request (scoped
+                     (var cr (require "cached-request"))
+                     (|> (cr request)
+                         (tap (.setCacheDirectory cache-directory)))))
+
+(scoped
+ (cached-request {url: "https://reqres.in/api/users?page=2"}
+                 (#(err resp body)
+                   (console.log body))))
