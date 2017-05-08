@@ -1,0 +1,37 @@
+(var JSONView (require "json-view"))
+
+(def setup-json-view [container json-data on-change]
+     ;; can also call (JSONView name data)
+     ;; but name doesn't seem useful
+     (var view (new JSONView json-data))
+     (when on-change
+           (view.on "change" on-change))
+     (view.expand true)
+     (while container.firstChild
+            (container.removeChild container.firstChild))
+     (|>
+      (jq-miccup ["link"
+                  {href: "node_modules/json-view/devtools.css"
+                   type: "text/css"
+                   rel: "stylesheet"
+                   media: "screen,print"}])
+      (.appendTo container))
+     (container.appendChild view.dom))
+
+;; example
+(comment
+ (var container (document.getElementById "inject-container")
+      data {hello : "world"
+            doubleClick : "me to edit"
+            a : null
+            b : true
+            c : false
+            d : 1
+            e : {nested : "object"}
+            f : [1 4 9]
+            })
+ (setup-json-view container
+                  data
+                  (#(key old-val new-val)
+                    (console.log "change" key old-val "=>" new-val)
+                    (console.log view.value))))
