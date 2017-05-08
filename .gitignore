@@ -10,3 +10,5 @@ sib/*.map
 # session data
 data
 store.db
+
+session/*.yml
