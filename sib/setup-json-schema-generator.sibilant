@@ -1,0 +1,10 @@
+(var json-schema-generator (require "json-schema-generator"))
+
+(scoped
+ (console.clear)
+ (var obj {"make": "Toyota"
+           "model": "Camry"
+           "year": 2008})
+ (var scm (json-schema-generator obj))
+ (console.log scm))
+
