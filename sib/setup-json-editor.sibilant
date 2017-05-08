@@ -1,0 +1,42 @@
+(def empty-element! [container]
+     (while container.firstChild
+            (container.removeChild container.firstChild)))
+
+(scoped
+ (console.clear)
+ (var container (document.getElementById "inject-container"))
+ (empty-element! container)
+ (|>
+  (jq-miccup ["script"
+              {type: "application/javascript"
+               src: "node_modules/json-editor/dist/jsoneditor.js"}])
+  (.appendTo container))
+ (var editor (new JSONEditor container 
+                  {schema: {type: "object"
+                            title: "Car"
+                            properties: {make: {
+                                                type: "string"
+                                                enum: ["Toyota"
+                                                       "BMW"
+                                                       "Honda"
+                                                       "Ford"
+                                                       "Chevy"
+                                                       "VW"]}
+                                         model: {type: "string"}
+                                         year: {type: "integer"
+                                                enum: [1995 1996 1997 1998 1999
+                                                       2000 2001 2002 2003 2004
+                                                       2005 2006 2007 2008 2009
+                                                       2010 2011 2012 2013 2014]
+                                                default: 2008}
+                                         }}}))
+ (editor.on "ready" (#>
+                     (console.log "EDITOR IS READY")
+                     (editor.validate)))
+ (|> ($ "<button>")
+     (.html "get value")
+     (.on "click" (#>
+                   (|> editor
+                       (.getValue)
+                       (console.log))))
+     (.appendTo container)))

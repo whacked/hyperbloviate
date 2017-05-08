@@ -16,6 +16,7 @@
     "jquery": "^3.1.1",
     "jquery.panzoom": "^3.2.2",
     "js-yaml": "^3.7.0",
+    "json-editor": "^0.7.28",
     "json-view": "^0.4.0",
     "mithril": "^0.2.5",
     "multitransport-jsonrpc": "^0.9.4",
