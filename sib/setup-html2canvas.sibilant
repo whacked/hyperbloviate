@@ -1,3 +1,4 @@
+;; https://github.com/niklasvh/html2canvas
 (var html2canvas (require "html2canvas"))
 (scoped
  (var control-container (document.getElementById "control-container")

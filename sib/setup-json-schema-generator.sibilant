@@ -1,3 +1,4 @@
+;; https://github.com/krg7880/json-schema-generator
 (var json-schema-generator (require "json-schema-generator"))
 
 (scoped

@@ -1,3 +1,4 @@
+;; https://github.com/jdorn/json-editor
 ;; seems require() doesn't do it
 (scoped
  (console.clear)
