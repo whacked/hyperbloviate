@@ -1,0 +1,14 @@
+;; https://github.com/flickr/yakbak
+(var http (require "http")
+     yakbak (require "yakbak")
+     request (require "request"))
+
+(var
+ yakbak-server
+ (http.createServer (yakbak
+                     "https://reqres.in"
+                     {dirname: (+ __dirname "/tapes")})))
+(yakbak-server.listen 3000)
+(request {url: "http://localhost:3000/api/users?page=1"}
+         (#(err resp body)
+           (console.log body)))
