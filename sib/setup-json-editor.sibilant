@@ -1,7 +1,4 @@
-(def empty-element! [container]
-     (while container.firstChild
-            (container.removeChild container.firstChild)))
-
+;; seems require() doesn't do it
 (scoped
  (console.clear)
  (var container (document.getElementById "inject-container"))

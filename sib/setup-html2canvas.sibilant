@@ -1,0 +1,8 @@
+(var html2canvas (require "html2canvas"))
+(scoped
+ (var control-container (document.getElementById "control-container")
+      inject-container (document.getElementById "inject-container"))
+ (|> inject-container
+     (html2canvas)
+     (.then (#(canvas)
+              (control-container.appendChild canvas)))))

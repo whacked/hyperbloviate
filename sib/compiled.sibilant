@@ -45,6 +45,10 @@
      (|> (get_webview wv-idx)
          (.getAttribute "src")))
 
+(def empty-element! (container)
+     (while container.firstChild
+            (container.removeChild container.firstChild)))
+
 (def m-miccup (miccup)
      ;; miccup to mithril
      (if (not (Array.isArray miccup))

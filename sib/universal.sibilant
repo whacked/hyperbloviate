@@ -28,6 +28,9 @@
             (incr beg))
      out)
 
+(def seq [x]
+     (Array.prototype.slice.call x))
+
 (def deep-copy (obj)
      (|> obj
          (JSON.stringify)
