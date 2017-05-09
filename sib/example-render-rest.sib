@@ -1,0 +1,41 @@
+(var cache-directory "/tmp/request-cache"
+     request (scoped
+              (var cr (require "cached-request"))
+              (|> (cr (require "request"))
+                  (tap (.setCacheDirectory cache-directory)))))
+
+(scoped
+ (def render-user-row [data]
+      ["tr"
+       ["td"
+        ["img"
+         {src: data.avatar}]]
+       ["td"
+        data.first_name]
+       ["td"
+        data.last_name]])
+
+ (def render-users [data]
+      ["table"
+       {border: 2}
+       (mapcar
+        render-user-row
+        (drill-get data ["data" []]))])
+
+ (console.clear)
+ (var t0 (new Date))
+ (request {url: "https://reqres.in/api/users?page=1"}
+          (#(err resp body)
+            (console.log "elapsed:" (|> (new Date)
+                                        (- t0)
+                                        (/ 1000)))
+            (var data (JSON.parse body))
+            (assign window.data data)
+            (m.render (document.getElementById "control-container")
+                      (m-miccup
+                       ["div"
+                        ["pre"
+                         (JSON.stringify data null 4)]
+                        ["hr"]
+                        ["div"
+                         (render-users data)]])))))

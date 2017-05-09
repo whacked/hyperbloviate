@@ -30,8 +30,8 @@
     "nedb": "^1.8.0",
     "request-promise": "^4.2.1",
     "robotjs": "^0.4.5",
+    "yakbak": "^2.6.0",
     "sibilant": "^0.5.5"
-    "yakbak": "^2.6.0"
   },
   "name": "drivable",
   "main": "main.js",
