@@ -1,0 +1,71 @@
+(var md5 (require "md5"))
+
+(var $gen-style-el-id "gen-style")
+(def gen-random-name ()
+     (var base-string "abcdefghijklmnopqrstuvwxyz")
+     (|> (mapcar
+          (#(i) (|> (get base-string "length")
+                    (* (Math.random))
+                    (Math.floor)
+                    (.charAt base-string #)))
+          (range 6))
+         (.join "")))
+(def to-style-string (propmap)
+     (var style-string
+          (|> (mapcar
+               (#(prop-name)
+                 (+ "" prop-name ":" (get propmap prop-name) ";"))
+               (Object.keys propmap))
+              (.join "\n")
+              (+ "{\n" # "\n}")))
+     style-string)
+(def gen-css-class (css-map style-map)
+     ;; old method
+     ;; (with-return-var
+     ;;  class-name (gen-random-name)
+     ;;  (set css-map class-name style-map))
+     (var style-hash (|> (to-style-string style-map)
+                         (md5)))
+     (with-return-var
+      class-name (+ "auto-" (.substring style-hash 0 6))
+      (set css-map class-name style-map)))
+(def rebuild-css (css-map)
+     (|> (mapcar
+          (#(class-name)
+            (+ "." class-name
+               " "
+               (|> (get css-map class-name)
+                   (to-style-string))"\n"))
+          (Object.keys css-map))
+         (.join "\n")))
+
+(var $css-class-lookup {}
+     $css-hash-lookup {})
+
+;; looks for existing def in global map $css-class-lookup;
+;; if found, returns class name. if not found,
+;; creates dynamic class name and adds style to dom,
+;; returning new class name
+(def $style-class (style-map)
+     (var style-hash (|> (to-style-string style-map)
+                         (md5))
+          maybe-existing (get $css-hash-lookup style-hash))
+
+     (if maybe-existing
+         maybe-existing
+         (with-return-var
+          new-style-class (gen-css-class
+                           $css-class-lookup
+                           style-map)
+          (set $css-hash-lookup style-hash new-style-class)
+          ;; rebuild and apply to dom
+          (var style-el (if maybe-el
+                            maybe-el (document.createElement "style"))
+               style-code (rebuild-css $css-class-lookup))
+          (style-el.setAttribute "id" $gen-style-el-id)
+          (document.body.appendChild style-el)
+          (assign style-el.innerHTML style-code))))
+
+;; example
+;; (var css-class ($style-class {border: "1px solid red"
+;;                               "font-weight": "bold"}))

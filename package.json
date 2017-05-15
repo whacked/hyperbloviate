@@ -25,6 +25,7 @@
     "json-editor": "^0.7.28",
     "json-schema-generator": "^2.0.3",
     "json-view": "^0.4.0",
+    "md5": "^2.2.1",
     "mithril": "^0.2.5",
     "multitransport-jsonrpc": "^0.9.4",
     "nedb": "^1.8.0",
