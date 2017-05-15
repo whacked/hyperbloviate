@@ -42,6 +42,9 @@
             <button onclick="attach_webview_event_listeners()">inject</button>
           </fieldset>
         </div>
+        <div id="content-container" class="to-inject">
+          content container -- this is to get replaced with the remote website viewer component
+        </div>
         <div id="control-container" class="to-inject">control container</div>
 
         <!-- server side libs -->
@@ -163,7 +166,7 @@
                         eval(sibilant.sibilize(el.innerText));
                     }
                 });
-
+                
                 var default_config = {
                     content: [{
                         type: 'row',
@@ -176,7 +179,7 @@
                             },{
                                 type: 'component',
                                 componentName: 'dom-component',
-                                componentState: {  }
+                                componentState: { id: 'content-container' }
                             }]
                         },
                                  {
@@ -241,7 +244,10 @@
                     aux.addEventListener("ipc-message", ipc_event_dispatcher);
                     aux.send("get-html");
 
-                    container.getElement().html(aux);
+                    var content_component = document.getElementById(componentState.id);
+                    container.getElement().html(content_component);
+                    content_component.innerHTML = "";
+                    content_component.appendChild(aux);
                 });
                 main_layout.registerComponent("dom-id-component", function(container, componentState) {
                     container.getElement().html(document.getElementById(componentState.id));
