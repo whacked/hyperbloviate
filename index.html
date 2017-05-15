@@ -63,9 +63,15 @@
             } catch(err) {
                 // electron;
             }
-          var common = require("./sib/common"),
-              Const = common.Const,
-              Conf = { outputEval: false };
+            var common = require("./sib/common"),
+                Const = common.Const,
+                Conf = { outputEval: false };
+            try {
+                const cljs = require("clojurescript");
+            } catch(err) {
+                console.warn("clojurescript not found. install with npm install clojurescript");
+                const cljs = null;
+            }
         </script>
 
         <!--
@@ -331,6 +337,24 @@
             } catch(err) {
                 console.warn(err);
                 callback(undefined, ["there was an error in the return"]);
+            }
+        }
+
+        function clojurescript_handler(obj, callback) {
+            console.log("%c GOT %c CL%cJS ", "color:white;background:gray;", "color:white;background:#96CA4B;", "color:white;background:#5F7FBF;");
+            if(Conf.outputEval) {
+                console.log('=============================');
+                console.log(obj);
+                console.log('=============================');
+            }
+            if(cljs) {
+                var rtn = cljs.eval(obj);
+                try {
+                    callback(undefined, rtn);
+                } catch(err) {
+                    console.warn(err);
+                    callback(undefined, ["there was an error in the return"]);
+                }
             }
         }
 
