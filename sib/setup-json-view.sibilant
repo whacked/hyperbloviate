@@ -39,9 +39,7 @@
                     (console.log view.value))))
 
 
-;; requires $style-class
-;; move to tab-panel or something
-(def setup-json-switcher-view [container seed-json on-change]
+(def setup-json-switcher-component [seed-json on-change]
      ;; style classes
      (var tab-bar-class ($style-class {position: "relative"
                                        float: "left"
@@ -58,75 +56,80 @@
 
      (when seed-json
            (ui-state.display-data seed-json))
+     {controller: (#>
+                   (console.info "in controller")
+                   {})
+      tab-def: {json-view: {label: "json view"
+                            render: (#>
+                                     (console.log "rendering the view")
+                                     ["div"
+                                      {config: (#(dom)
+                                                 (setup-json-view
+                                                  dom
+                                                  (ui-state.display-data)
+                                                  (#(key oldv newv)
+                                                    (m-transact!
+                                                     (ui-state.display-data this.value)))))}])}
+
+                raw-json: {label: "raw json"
+                           render: (#>
+                                    (console.log "rendering the raw")
+                                    ["pre"
+                                     {style: {width: "100%"
+                                              height: "100%"}}
+                                     (JSON.stringify
+                                      (ui-state.display-data)
+                                      null 4)])}}
+      view: (#(ctrl)
+              ;; self.view is the view object here, for example
+              (var self this)
+              (def get-selected-tab-or-default []
+                   (|> (or (ui-state.selected-tab)
+                           (|> self.tab-def
+                               (Object.keys)
+                               (first)))
+                       (get self.tab-def #)))
+              (var table (|> (m-miccup
+                              ["div"
+                               {class: tab-bar-class}
+                               ["style"
+                                (+ "ul." ul-style-class " { list-style-type: none }")
+                                (+ "ul." ul-style-class " li { float: left; border: 1px solid red; margin: 2px; padding: 2px; width: 100px; }")
+                                (+ "ul." ul-style-class " li:hover { background: gray; color: black; }")
+                                (+ "ul." ul-style-class " li.active { background: white; color: black; }")]
+                               (scoped
+                                ["ul"
+                                 {class: ul-style-class}
+                                 (mapcar (#(k i)
+                                           [(+ "li"
+                                               (if (= k (ui-state.selected-tab))
+                                                   ".active"
+                                                   ""))
+                                            {onclick: (#>
+                                                       (ui-state.selected-tab k)) }
+                                            (get self.tab-def k 'label)
+                                            ])
+                                         (Object.keys self.tab-def))])
+                               ["div" {style: {clear: "both" } }]
+                               ["div"
+                                {style: {width: "100%"
+                                         height: "100%"
+                                         color: "black"
+                                         background: "white"}
+                                 id: (|> (get-selected-tab-or-default)
+                                         (get 'label)
+                                         (+ "panel-" #))}
+                                ;; note function call
+                                ((|> (get-selected-tab-or-default)
+                                     (get 'render)))]
+                               ]))))})
+
+;; requires $style-class
+;; move to tab-panel or something
+(def setup-json-switcher-view [container seed-json on-change]
      (m.mount
       container
-      {controller: (#>
-                    (console.info "in controller")
-                    {})
-       tab-def: {json-view: {label: "json view"
-                             render: (#>
-                                      (console.log "rendering the view")
-                                      ["div"
-                                       {config: (#(dom)
-                                                  (setup-json-view
-                                                   dom
-                                                   (ui-state.display-data)
-                                                   (#(key oldv newv)
-                                                     (m-transact!
-                                                      (ui-state.display-data this.value)))))}])}
-
-                 raw-json: {label: "raw json"
-                            render: (#>
-                                     (console.log "rendering the raw")
-                                     ["pre"
-                                      {style: {width: "100%"
-                                               height: "100%"}}
-                                      (JSON.stringify
-                                       (ui-state.display-data)
-                                       null 4)])}}
-       view: (#(ctrl)
-               ;; self.view is the view object here, for example
-               (var self this)
-               (def get-selected-tab-or-default []
-                    (|> (or (ui-state.selected-tab)
-                            (|> self.tab-def
-                                (Object.keys)
-                                (first)))
-                        (get self.tab-def #)))
-               (var table (|> (m-miccup
-                               ["div"
-                                {class: tab-bar-class}
-                                ["style"
-                                 (+ "ul." ul-style-class " { list-style-type: none }")
-                                 (+ "ul." ul-style-class " li { float: left; border: 1px solid red; margin: 2px; padding: 2px; width: 100px; }")
-                                 (+ "ul." ul-style-class " li:hover { background: gray; color: black; }")
-                                 (+ "ul." ul-style-class " li.active { background: white; color: black; }")]
-                                (scoped
-                                 ["ul"
-                                  {class: ul-style-class}
-                                  (mapcar (#(k i)
-                                            [(+ "li"
-                                                (if (= k (ui-state.selected-tab))
-                                                    ".active"
-                                                    ""))
-                                             {onclick: (#>
-                                                        (ui-state.selected-tab k)) }
-                                             (get self.tab-def k 'label)
-                                             ])
-                                          (Object.keys self.tab-def))])
-                                ["div" {style: {clear: "both" } }]
-                                ["div"
-                                 {style: {width: "100%"
-                                          height: "100%"
-                                          color: "black"
-                                          background: "white"}
-                                  id: (|> (get-selected-tab-or-default)
-                                          (get 'label)
-                                          (+ "panel-" #))}
-                                 ;; note function call
-                                 ((|> (get-selected-tab-or-default)
-                                      (get 'render)))]
-                                ]))))}))
+      (setup-json-switcher-component seed-json on-change)))
 
 (setup-json-switcher-view
  (document.getElementById "content-container"))
