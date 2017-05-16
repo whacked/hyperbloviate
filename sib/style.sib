@@ -59,7 +59,8 @@
                            style-map)
           (set $css-hash-lookup style-hash new-style-class)
           ;; rebuild and apply to dom
-          (var style-el (if maybe-el
+          (var maybe-el (document.getElementById $gen-style-el-id)
+               style-el (if maybe-el
                             maybe-el (document.createElement "style"))
                style-code (rebuild-css $css-class-lookup))
           (style-el.setAttribute "id" $gen-style-el-id)
