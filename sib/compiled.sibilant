@@ -21,13 +21,6 @@
           }
      jsyaml (require "js-yaml"))
 
-;; robotjs
-(try
- (set window 'robot (require "robotjs"))
- (scoped
-  (set window 'robot { moveMouse: (#(_ _)
-                                    (console.log "TODO: mouse fallback")) })))
-
 ;; utility
 (def set-webview-url ()
      ;; arguments is NOT an array!!!
