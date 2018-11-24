@@ -114,7 +114,6 @@
                           (fs.readFileSync "utf-8")
                           (jsyaml.safeLoad)
                           (tap (set 'filename fname)))))))))))
-(load-all-sessions!)
 
 (def load-all-plugins! ()
      (fs.readdir
@@ -137,7 +136,6 @@
                              (require (+ "./" (path.join __plugin-dir-name fname)))))))
         (m-transact!
          (control-state.plugin-mapping out)))))
-(load-all-plugins!)
 
 (def make-session (url name)
      {url: url
@@ -250,54 +248,55 @@
                               exec-string)))
                    ) }
         (JSON.stringify locater)]]])
+
 (def action-list-view ()
      (var sess (control-state.active-session))
      (if sess
          ["div"
-          (if sess.name
-              ["h1" sess.name]
-              "")
-          ["hr"]
-          ["a"
-           {style: {margin: "0.2em"
-                    padding: "0.1em"
-                    border: "1px solid blue"
-                    background: "lightblue"
-                    border-radius: "4px"
-                    cursor: "pointer"}
-            onclick: (#> (set-webview-url sess.url))}
-           sess.url]
-          ["hr"]
-          ["ol"
-           {style: {margin: "0.5em"
-                    padding: "0.5em"}}
-           (mapcar action-list-item sess.history)
-           (when (get sess 'is-dirty)
-                 [["hr"]
-                  ["button"
-                   {onclick: (#>
-                              (m-transact!
-                               (delete sess.is-dirty)
-                               (var new-session-list [])
-                               (each (iter-sess) (control-state.session-list)
-                                     (new-session-list.push
-                                      (if (= iter-sess.filename
-                                             sess.filename)
-                                          sess
-                                          iter-sess)))
-                               (control-state.session-list new-session-list)
-                               (control-state.active-session sess)
-                               (var filepath (path.join __session-dir-path sess.filename))
-                               (fs.writeFile
-                                filepath
-                                (jsyaml.safeDump sess)
-                                (#(err)
-                                  (if err
-                                      (alert (+ "file write failed!\n"
-                                                (.toString err)))
-                                      (console.log (+ "wrote: " filepath)))))
-                               ))}
-                   "save!"]])]]))
+	   (if sess.name
+	       ["h1" sess.name]
+	       "")
+	   ["hr"]
+	   ["a"
+	     {style: {margin: "0.2em"
+		       padding: "0.1em"
+		       border: "1px solid blue"
+		       background: "lightblue"
+		       border-radius: "4px"
+		       cursor: "pointer"}
+	       onclick: (#> (set-webview-url sess.url))}
+	     sess.url]
+	   ["hr"]
+	   ["ol"
+	     {style: {margin: "0.5em"
+		       padding: "0.5em"}}
+	     (mapcar action-list-item sess.history)
+	     (when (get sess 'is-dirty)
+		   [["hr"]
+		     ["button"
+		       {onclick: (#>
+				  (m-transact!
+				   (delete sess.is-dirty)
+				   (var new-session-list [])
+				   (each (iter-sess) (control-state.session-list)
+					 (new-session-list.push
+					  (if (= iter-sess.filename
+						 sess.filename)
+					      sess
+					      iter-sess)))
+				   (control-state.session-list new-session-list)
+				   (control-state.active-session sess)
+				   (var filepath (path.join __session-dir-path sess.filename))
+				   (fs.writeFile
+				    filepath
+				    (jsyaml.safeDump sess)
+				    (#(err)
+				      (if err
+					  (alert (+ "file write failed!\n"
+						    (.toString err)))
+					  (console.log (+ "wrote: " filepath)))))
+				   ))}
+		       "save!"]])]]))
 
 (def plugin-list-view ()
      ["div"
@@ -439,7 +438,9 @@
                                   ]))))})
 
 (def setup-control-container! (element)
-     (m.mount element ui))
+     (m.mount element ui)
+     (load-all-sessions!)
+     (load-all-plugins!))
 
 (set exports
      'setup-control-container setup-control-container!)
