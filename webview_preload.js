@@ -1,8 +1,6 @@
-import {
-    Const,
-    Conf,
-} from "./sib/constant";
-
+const constant = require("./sib/constant"),
+    Const = constant.Const,
+    Conf = constant.Conf;
 const common = require("./sib/common");
 
 const path = require("path"),
@@ -12,7 +10,7 @@ const {CssSelectorGenerator} = require("css-selector-generator");
 
 // cache plugin map
 var PluginMap = {};
-fs.readdirSync(PLUGIN_DIRECTORY).forEach(function(pluginName) {
+fs.readdirSync(Conf.PLUGIN_DIR_NAME).forEach(function(pluginName) {
     console.log(pluginName)
     const pluginPath = "./" + Conf.PLUGIN_DIR_NAME + "/" + pluginName;
     try {
