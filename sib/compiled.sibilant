@@ -106,7 +106,7 @@
         (var re-yml (regex "yml$"))
         (m-transact!
          (control-state.session-list
-          (|> file-list
+          (|> (or file-list [])
               (.filter (#(fname)
                          (fname.match re-yml)))
               (.map (#(fname)
@@ -121,7 +121,7 @@
       __plugin-dir-path
       (#(err file-list)
         (var out {})
-        (each (fname i) file-list
+        (each (fname i) (or file-list [])
               (var spl (fname.split ".")
                    basename (if (< 1 spl.length)
                                 (fname.substring
