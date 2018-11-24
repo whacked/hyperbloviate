@@ -56,38 +56,37 @@
 
 (set exports
      'Const Const
-     'do_alert (#(x) (alert x))
-     'click_selector (#(selector)
-                       (var el (document.querySelector selector))
-                       (when (and el el.click)
-                             (flash-element el 500 100)
-                             (setTimeout
-                              (#>
-                               (console.log
-                                "CLICKY..." (el.click)))
-                              3000)))
-     ;; see http://stackoverflow.com/a/809182
-     'fire_event_on (#(selector etype)
+     'clickSelector (#(selector)
                       (var el (document.querySelector selector))
-                      (if el.fireEvent
-                          (el.fireEvent (+ "on" etype))
-                          (scoped
-                           (|> (document.createEvent "Events")
-                               (tap (.initEvent etype true false))
-                               (el.dispatchEvent)))))
-     'proc_right_click (#(evt)
-                         (var csg (new CssSelectorGenerator)
-                              tgt evt.target)
-                         (flash-element tgt 600 100)
-                         (ipcRenderer.sendToHost
-                          Const.WEBVIEW_ELEMENT_CLICK
-                          (JSON.stringify
-                           {x: evt.clientX
-                            y: evt.clientY
-                            tag: (evt.target.tagName.toLowerCase)
-                            type: (scoped
-                                   (var type (|> evt.target
-                                                 (maybe-get 'type)))
-                                   (if type
-                                       (type.toLowerCase)))
-                            selector: (csg.getSelector tgt)}))))
+                      (when (and el el.click)
+                            (flash-element el 500 100)
+                            (setTimeout
+                             (#>
+                              (console.log
+                               "CLICKY..." (el.click)))
+                             3000)))
+     ;; see http://stackoverflow.com/a/809182
+     'fireEventOn (#(selector etype)
+                    (var el (document.querySelector selector))
+                    (if el.fireEvent
+                        (el.fireEvent (+ "on" etype))
+                        (scoped
+                         (|> (document.createEvent "Events")
+                             (tap (.initEvent etype true false))
+                             (el.dispatchEvent)))))
+     'procRightClick (#(evt)
+                       (var csg (new CssSelectorGenerator)
+                            tgt evt.target)
+                       (flash-element tgt 600 100)
+                       (ipcRenderer.sendToHost
+                        Const.WEBVIEW_ELEMENT_CLICK
+                        (JSON.stringify
+                         {x: evt.clientX
+                          y: evt.clientY
+                          tag: (evt.target.tagName.toLowerCase)
+                          type: (scoped
+                                 (var type (|> evt.target
+                                               (maybe-get 'type)))
+                                 (if type
+                                     (type.toLowerCase)))
+                          selector: (csg.getSelector tgt)}))))

@@ -273,7 +273,7 @@
                                 (and (= locater.tag "input")
                                      (or (= locater.type "submit")
                                          (= locater.type "button"))))
-                            (+ "common.click_selector('" locater.selector "')")
+                            (+ "common.clickSelector('" locater.selector "')")
                             
                             true
                             (+ "document.querySelector('"
@@ -281,7 +281,7 @@
                                "').scrollIntoView({behavior: \"smooth\"})")
                             
                             null
-                            ;; (+ "common.fire_event_on('" locater.selector "', 'Click')")
+                            ;; (+ "common.fireEventOn('" locater.selector "', 'Click')")
                             ))
                    (when exec-string
                          (|> (getWebview)

@@ -12,5 +12,5 @@ ipcRenderer.on("eval", function(evt, arg) {
 });
 
 window.addEventListener("DOMContentLoaded", function() {
-    document.body.addEventListener("contextmenu", common.proc_right_click, true);
+    document.body.addEventListener("contextmenu", common.procRightClick, true);
 });
