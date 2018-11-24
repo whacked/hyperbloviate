@@ -110,7 +110,8 @@
                      (|> (path.join __session-dir-path fname)
                          (fs.readFileSync "utf-8")
                          (jsyaml.safeLoad)
-                         (tap (set 'filename fname))))))))))
+                         (tap (set 'filename fname)))))))
+        (m.redraw))))
 
 (def make-plugin-object (desc init)
      {init: init
@@ -168,7 +169,7 @@
                     )
 
               (if (get out plugin-name)
-                  (console.warn (+ "skipping: " plugin-name "because already loaded"))
+                  (console.warn (+ "already loaded: " plugin-name))
                   
                   (fs.existsSync (get-plugin-file-relpath "index.js"))
                   (do
@@ -181,14 +182,15 @@
                         (make-plugin-object
                          (get plugin-module 'info 'description)
                          (get plugin-module 'start))))))
-        (control-state.plugin-mapping out))))
+        (control-state.plugin-mapping out)
+        (m.redraw))))
 
 (def make-session (url name)
      {url: url
       name: name
       history: []
       })
-(var ui-state {selected-tab: (m-prop 'saved-urls)
+(var ui-state {selected-tab: (m-prop 'plugin-list)
                scratch-view: (m-prop)})
 
 (def render-session-list (session-list)
