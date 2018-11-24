@@ -69,8 +69,7 @@
 (var jsyaml (require "js-yaml")
      __session-dir-path (resolve-asset-dir "session")
      __handler-dir-path (resolve-asset-dir "handler")
-     __plugin-dir-name "plugin"
-     __plugin-dir-path (resolve-asset-dir __plugin-dir-name))
+     __plugin-dir-path (resolve-asset-dir (get Conf "PLUGIN_DIR_NAME")))
 
 ;; housekeeping
 (when (not (fs.existsSync __session-dir-path))
@@ -170,7 +169,7 @@
                    (var plugin-module
                         (require (+ "../"
                                     (path.join
-                                     __plugin-dir-name
+                                     (get Conf "PLUGIN_DIR_NAME")
                                      plugin-name))))
                    (set out plugin-name
                         (make-plugin-object

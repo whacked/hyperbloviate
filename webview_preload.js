@@ -1,5 +1,10 @@
-const common = require("./sib/common"),
-    const Const = common.Const;
+import {
+    Const,
+    Conf,
+} from "./sib/constant";
+
+const common = require("./sib/common");
+
 const {ipcRenderer} = require("electron");
 const {CssSelectorGenerator} = require("css-selector-generator");
 

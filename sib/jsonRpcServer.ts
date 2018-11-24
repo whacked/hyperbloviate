@@ -1,7 +1,4 @@
-// DEBUG
-const Conf = {
-    outputEval: false,
-};
+import { Conf } from "./constant";
 
 const jsonrpc = require('multitransport-jsonrpc'),
     express = require('express'),
@@ -10,7 +7,7 @@ const jsonrpc = require('multitransport-jsonrpc'),
 
 function javascriptHandler(obj, callback) {
     console.log("%c GOT JAVASCRIPT ", "color:yellow;background:gray;");
-    if (Conf.outputEval) {
+    if (Conf.OUTPUT_EVAL) {
         console.log('=============================');
         console.log(obj);
         console.log('=============================');
@@ -26,7 +23,7 @@ function javascriptHandler(obj, callback) {
 
 function sibilantHandler(obj, callback) {
     console.log("%c GOT SIBILANT ", "color:lime;background:black;");
-    if (Conf.outputEval) {
+    if (Conf.OUTPUT_EVAL) {
         console.log('=============================');
         console.log(obj);
         console.log('=============================');

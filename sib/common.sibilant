@@ -1,8 +1,7 @@
 ;; common between host window and hosted webviews
 (include "./universal")
 
-(var Const {"WEBVIEW_ELEMENT_CLICK": "webview-element-click"
-            "WEBVIEW_EVENT_CHANNEL": "chn-webview"})
+(include "./constant")
 
 (var require-CssSelectorGenerator (require "css-selector-generator")
      CssSelectorGenerator require-CssSelectorGenerator.CssSelectorGenerator
@@ -56,7 +55,6 @@
                interval)))
 
 (set exports
-     'Const Const
      'clickSelector (#(selector)
                       (var el (document.querySelector selector))
                       (when (and el el.click)
