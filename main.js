@@ -8,14 +8,12 @@ app.on("window-all-closed", function() {
 });
 
 app.on("ready", function() {
-
     mainWindow = new BrowserWindow({
         webPreferences: {
             preload: path.resolve(path.join(__dirname, "electron-preload.js"))
         }
     });
-
-    mainWindow.loadURL("file://"+__dirname+"/index.html");
+    mainWindow.loadURL("index.html");
     mainWindow.openDevTools();
 
     ipcMain.on("ipc", (event, arg) => {
@@ -28,7 +26,5 @@ app.on("ready", function() {
         // console.log(event);
         console.log(arg);
     });
-
-
 
 });
