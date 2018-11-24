@@ -114,28 +114,71 @@
                           (fs.readFileSync "utf-8")
                           (jsyaml.safeLoad)
                           (tap (set 'filename fname)))))))))))
+(def make-plugin-object (desc init)
+     {init: init
+      description: desc})
+
+(def compile-sibilant-plugin! (plugin-sibilant-path)
+     (|> plugin-sibilant-path
+         (fs.readFileSync "utf-8")
+         (sibilant.sibilize)
+         (fs.writeFileSync
+          (path.join
+           (path.dirname plugin-sibilant-path)
+           "index.js")
+          #)))
 
 (def load-all-plugins! ()
      (fs.readdir
       __plugin-dir-path
       (#(err file-list)
         (var out {})
-        (each (fname i) (or file-list [])
-              (var spl (fname.split ".")
-                   basename (if (< 1 spl.length)
-                                (fname.substring
-                                 0 (- fname.length 1
-                                      (get (last spl) 'length))))
-                   ext (if (= 1 spl.length)
-                           null
-                           (last spl)))
-              (when (= ext "js")
-                    (if (get out basename)
-                        (console.log "skipping: " fname "because already loaded")
-                        (set out basename
-                             (require (+ "./" (path.join __plugin-dir-name fname)))))))
-        (m-transact!
-         (control-state.plugin-mapping out)))))
+        (each (plugin-name i) (or file-list [])
+              (var spl (plugin-name.split ".")
+                   get-plugin-file-relpath (#(plugin-file)
+                                             (path.join
+                                              __plugin-dir-path
+                                              plugin-name
+                                              plugin-file))
+                   maybe-sib-file (|> ["index.sib"
+                                       "index.sibilant"]
+                                      (.map get-plugin-file-relpath)
+                                      (.filter fs.existsSync)
+                                      (first))
+                   init-plugin (#() (alert
+                                     (+ "[OVERRIDE] if you are seeing this message, "
+                                        "the plugin was NOT loaded properly"))))
+
+              (when maybe-sib-file
+                    ;; this will likely stop working in the future
+                    (|> maybe-sib-file
+                        (fs.readFileSync "utf-8")
+                        (sibilant.sibilize)
+                        (eval))
+                    ;; after eval, we expect to have "init-plugin" in the namespace
+                    (set out plugin-name
+                         (make-plugin-object
+                          plugin-description
+                          init-plugin))
+                    ;; if the eval fails, investigate this method
+                    ;; (compile-sibilant-plugin! maybe-sib-file)
+                    )
+
+              (if (get out plugin-name)
+                  (console.warn (+ "skipping: " plugin-name "because already loaded"))
+                  
+                  (fs.existsSync (get-plugin-file-relpath "index.js"))
+                  (do
+                   (var plugin-module
+                        (require (+ "../"
+                                    (path.join
+                                     __plugin-dir-name
+                                     plugin-name))))
+                   (set out plugin-name
+                        (make-plugin-object
+                         (get plugin-module 'description)
+                         (get plugin-module 'init-plugin))))))
+        (control-state.plugin-mapping out))))
 
 (def make-session (url name)
      {url: url
@@ -299,15 +342,31 @@
 		       "save!"]])]]))
 
 (def plugin-list-view ()
+     (var plugin-mapping (control-state.plugin-mapping)
+          control-element (document.getElementById "panel-A")
+          view-element (document.getElementById "panel-B"))
      ["div"
-      ["ol"
+      ["table"
        {style: {margin: "0.5em"
                 padding: "0.5em"}}
-       (|> (control-state.plugin-mapping)
-           (Object.keys)
-           (mapcar (#(k)
-                     ["li" k])
-                   #))]])
+       ["tbody"
+        ["tr"
+         ["th" "name"]
+         ["th" "description"]]
+        (|> plugin-mapping
+            (Object.keys)
+            (mapcar (#(k)
+                      (var initialize! (get plugin-mapping k 'init))
+                      ["tr"
+                       ["td"
+                        ["button"
+                         {onclick: (#>
+                                    (initialize!
+                                     control-element view-element)
+                                    (webviewControl.attachWebviewEventListeners 0))}
+                         k]]
+                       ["td" (get plugin-mapping k 'description)]])
+                    #))]]])
 
 (var ui {controller: (#>
                       (console.info "in controller")
@@ -386,7 +445,7 @@
                                  render: action-list-view}
 
                    plugin-list: {label: "plugin list"
-                                  render: plugin-list-view}
+                                 render: plugin-list-view}
 
                    scratch: {label: "scratch"
                              render: (#>
