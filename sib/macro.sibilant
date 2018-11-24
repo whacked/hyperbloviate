@@ -7,13 +7,6 @@
 		      (interleave ",\n    ")) ]))
 
 ;; util
-(macro m-transact! (...body)
-       (^*scoped-without-return
-        `(do
-          (m.startComputation)
-          ...@body
-          (m.endComputation))))
-
 (macro with-return-var (rtn init ...body)
        (^*scoped-without-return
         `(do

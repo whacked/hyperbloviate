@@ -17,14 +17,12 @@
                  (DB.findOne
                   { url: (get-webview-url) }
                   (#(err, doc)
-                    (m-transact!
-                     (when doc
-                           (get doc 'click-history)
-                           )))))
-          save: (#>
-                 (DB.insert { url: (get-webview-url)
-                              'click-history: [] }))
-          }
+                    (when doc
+                          (get doc 'click-history)))))
+         save: (#>
+                (DB.insert { url: (get-webview-url)
+                            'click-history: [] }))
+         }
      jsyaml (require "js-yaml"))
 
 ;; utility
@@ -78,10 +76,10 @@
 (when (not (fs.existsSync __session-dir-path))
       (fs.mkdirSync __session-dir-path))
 
-(var control-state {session-list: (m.prop [])
-                    handler-mapping: (m.prop {})
-                    plugin-mapping: (m.prop {})
-                    active-session: (m.prop)})
+(var control-state {session-list: (m-prop [])
+                    handler-mapping: (m-prop {})
+                    plugin-mapping: (m-prop {})
+                    active-session: (m-prop)})
 
 (var WebViewDriver { exec: (#(channel arg)
                        (var func (get WebViewDriver channel))
@@ -91,7 +89,7 @@
        (var asess (control-state.active-session))
        (if (not asess)
            (alert "no active session")
-           (m-transact!
+           (do
             (var locater (JSON.parse js))
             (asess.history.push locater)
             (set asess 'is-dirty true)
@@ -104,16 +102,16 @@
       __session-dir-path
       (#(err file-list)
         (var re-yml (regex "yml$"))
-        (m-transact!
-         (control-state.session-list
-          (|> (or file-list [])
-              (.filter (#(fname)
-                         (fname.match re-yml)))
-              (.map (#(fname)
-                      (|> (path.join __session-dir-path fname)
-                          (fs.readFileSync "utf-8")
-                          (jsyaml.safeLoad)
-                          (tap (set 'filename fname)))))))))))
+        (control-state.session-list
+         (|> (or file-list [])
+             (.filter (#(fname)
+                        (fname.match re-yml)))
+             (.map (#(fname)
+                     (|> (path.join __session-dir-path fname)
+                         (fs.readFileSync "utf-8")
+                         (jsyaml.safeLoad)
+                         (tap (set 'filename fname))))))))))
+
 (def make-plugin-object (desc init)
      {init: init
       description: desc})
@@ -185,8 +183,8 @@
       name: name
       history: []
       })
-(var ui-state {selected-tab: (m.prop 'saved-urls)
-               scratch-view: (m.prop)})
+(var ui-state {selected-tab: (m-prop 'saved-urls)
+               scratch-view: (m-prop)})
 
 (def render-session-list (session-list)
      (var asess (control-state.active-session)
@@ -296,50 +294,49 @@
      (var sess (control-state.active-session))
      (if sess
          ["div"
-	   (if sess.name
-	       ["h1" sess.name]
-	       "")
-	   ["hr"]
-	   ["a"
-	     {style: {margin: "0.2em"
-		       padding: "0.1em"
-		       border: "1px solid blue"
-		       background: "lightblue"
-		       border-radius: "4px"
-		       cursor: "pointer"}
-	       onclick: (#> (set-webview-url sess.url))}
-	     sess.url]
-	   ["hr"]
-	   ["ol"
-	     {style: {margin: "0.5em"
-		       padding: "0.5em"}}
-	     (mapcar action-list-item sess.history)
-	     (when (get sess 'is-dirty)
-		   [["hr"]
-		     ["button"
-		       {onclick: (#>
-				  (m-transact!
-				   (delete sess.is-dirty)
-				   (var new-session-list [])
-				   (each (iter-sess) (control-state.session-list)
-					 (new-session-list.push
-					  (if (= iter-sess.filename
-						 sess.filename)
-					      sess
-					      iter-sess)))
-				   (control-state.session-list new-session-list)
-				   (control-state.active-session sess)
-				   (var filepath (path.join __session-dir-path sess.filename))
-				   (fs.writeFile
-				    filepath
-				    (jsyaml.safeDump sess)
-				    (#(err)
-				      (if err
-					  (alert (+ "file write failed!\n"
-						    (.toString err)))
-					  (console.log (+ "wrote: " filepath)))))
-				   ))}
-		       "save!"]])]]))
+          (if sess.name
+              ["h1" sess.name]
+              "")
+          ["hr"]
+          ["a"
+           {style: {margin: "0.2em"
+                    padding: "0.1em"
+                    border: "1px solid blue"
+                    background: "lightblue"
+                    border-radius: "4px"
+                    cursor: "pointer"}
+            onclick: (#> (set-webview-url sess.url))}
+           sess.url]
+          ["hr"]
+          ["ol"
+           {style: {margin: "0.5em"
+                    padding: "0.5em"}}
+           (mapcar action-list-item sess.history)
+           (when (get sess 'is-dirty)
+                 [["hr"]
+                  ["button"
+                   {onclick: (#>
+                              (delete sess.is-dirty)
+                              (var new-session-list [])
+                              (each (iter-sess) (control-state.session-list)
+                                    (new-session-list.push
+                                     (if (= iter-sess.filename
+                                            sess.filename)
+                                         sess
+                                         iter-sess)))
+                              (control-state.session-list new-session-list)
+                              (control-state.active-session sess)
+                              (var filepath (path.join __session-dir-path sess.filename))
+                              (fs.writeFile
+                               filepath
+                               (jsyaml.safeDump sess)
+                               (#(err)
+                                 (if err
+                                     (alert (+ "file write failed!\n"
+                                               (.toString err)))
+                                     (console.log (+ "wrote: " filepath)))))
+                              )}
+                   "save!"]])]]))
 
 (def plugin-list-view ()
      (var plugin-mapping (control-state.plugin-mapping)
@@ -376,7 +373,7 @@
                                 ;; find out nicer way to DRY
                                 bare-state: {name: null
                                              url: null}
-                                state: (m.prop {name: null
+                                state: (m-prop {name: null
                                                 url: null})
                                 render: (#>
                                          (var self this)
@@ -424,12 +421,11 @@
                                                                                     (regex "^(.+://)")
                                                                                     "")
                                                                           ".yml")))
-                                                              (m-transact!
-                                                               (self.state self.bare-state)
-                                                               (|> (control-state.session-list)
-                                                                   (.push new-session))
-                                                               (control-state.active-session
-                                                                new-session)))
+                                                              (self.state self.bare-state)
+                                                              (|> (control-state.session-list)
+                                                                  (.push new-session))
+                                                              (control-state.active-session
+                                                               new-session))
                                                         )}
                                              "start new session"]]
                                            ]

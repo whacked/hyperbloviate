@@ -16,7 +16,7 @@
     "jquery": "^3.1.1",
     "js-yaml": "^3.7.0",
     "jsedn": "^0.4.1",
-    "mithril": "^0.2.5",
+    "mithril": "^1.1.6",
     "multitransport-jsonrpc": "^0.9.4",
     "nedb": "^1.8.0",
     "sibilant": "^0.5.5"
