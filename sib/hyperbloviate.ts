@@ -87,3 +87,17 @@ function parseEdnConfig(ednConfigString: String) {
     );
 }
 
+function execJs(wv, js, cb = null) {
+    if (!wv) { return; }
+    if (wv.executeScript) {
+        wv.executeScript({ code: js }, cb ? cb : function (res) {
+            console.log(res[0])
+        });
+    } else if (wv.send) {
+        if (cb) {
+            CallbackCache.register("chn-webview", cb);
+        }
+        wv.send("eval", js);
+    }
+}
+

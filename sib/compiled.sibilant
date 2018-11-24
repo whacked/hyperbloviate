@@ -244,7 +244,7 @@
                             ))
                    (when exec-string
                          (|> (getWebview)
-                             (execjs
+                             (execJs
                               exec-string)))
                    ) }
         (JSON.stringify locater)]]])
