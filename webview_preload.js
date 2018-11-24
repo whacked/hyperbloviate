@@ -1,14 +1,23 @@
-const common = require("./sib/common");
+const common = require("./sib/common"),
+    const Const = common.Const;
 const {ipcRenderer} = require("electron");
 const {CssSelectorGenerator} = require("css-selector-generator");
 
-ipcRenderer.on("get-html", function(evt, arg) {
-    ipcRenderer.sendToHost("chn-webview", "naka kara " + arg, 1, 2, 3);
 });
 
 ipcRenderer.on("eval", function(evt, arg) {
     var res = eval(arg);
-    ipcRenderer.sendToHost("chn-webview", res);
+    ipcRenderer.sendToHost(Const.WEBVIEW_EVENT_CHANNEL, res);
+});
+
+ipcRenderer.on("executePlugin", function(evt, pluginName) {
+    var maybePlugin = PluginMap[pluginName];
+    if(!maybePlugin) {
+        console.warn("no such plugin: " + pluginName);
+        return;
+    }
+    var res = maybePlugin.execute();
+    ipcRenderer.sendToHost(Const.WEBVIEW_EVENT_CHANNEL, res);
 });
 
 window.addEventListener("DOMContentLoaded", function() {

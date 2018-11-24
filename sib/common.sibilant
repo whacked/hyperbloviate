@@ -1,7 +1,8 @@
 ;; common between host window and hosted webviews
 (include "./universal")
 
-(var Const { "WEBVIEW_ELEMENT_CLICK": "webview-element-click" })
+(var Const {"WEBVIEW_ELEMENT_CLICK": "webview-element-click"
+            "WEBVIEW_EVENT_CHANNEL": "chn-webview"})
 
 (var require-CssSelectorGenerator (require "css-selector-generator")
      CssSelectorGenerator require-CssSelectorGenerator.CssSelectorGenerator
