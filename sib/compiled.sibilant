@@ -10,18 +10,21 @@
        sibilant (require 'sibilant))
 
 (set window 'Datastore (require "nedb"))
-(var DB (new Datastore { filename: "store.db"
-                         autoload: true
-                         timestampData: true })
+(var DB (new Datastore {filename: "store.db"
+                        autoload: true
+                        timestampData: true })
      ;;  currently not used
-     db { load: (#>
-                 (DB.findOne
-                  { url: (get-webview-url) }
-                  (#(err, doc)
-                    (when doc
-                          (get doc 'click-history)))))
+     db {_store: DB
+         load: (#>
+                (DB.findOne
+                 {url: (get-webview-url)}
+                 (#(err, doc)
+                   (console.log
+                    "loaded" doc)
+                   (when doc
+                         (get doc 'click-history)))))
          save: (#>
-                (DB.insert { url: (get-webview-url)
+                (DB.insert {url: (get-webview-url)
                             'click-history: [] }))
          }
      jsyaml (require "js-yaml"))
@@ -505,4 +508,5 @@
      (load-all-plugins!))
 
 (set exports
-     'setup-control-container setup-control-container!)
+     'setupControlContainer setup-control-container!
+     'db db)
