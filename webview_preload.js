@@ -5,9 +5,22 @@ import {
 
 const common = require("./sib/common");
 
+const path = require("path"),
+    fs = require("fs");
 const {ipcRenderer} = require("electron");
 const {CssSelectorGenerator} = require("css-selector-generator");
 
+// cache plugin map
+var PluginMap = {};
+fs.readdirSync(PLUGIN_DIRECTORY).forEach(function(pluginName) {
+    console.log(pluginName)
+    const pluginPath = "./" + Conf.PLUGIN_DIR_NAME + "/" + pluginName;
+    try {
+        PluginMap[pluginName] = require(pluginPath);
+    } catch(e) {
+        console.info("failed to load plugin " + pluginName);
+        console.warn(e);
+    }
 });
 
 ipcRenderer.on("eval", function(evt, arg) {
