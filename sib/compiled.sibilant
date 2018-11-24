@@ -1,7 +1,12 @@
 (console.log "sibilant from compiled file")
 (include "./macro")
+(include "./common")
 (include "./universal")
 (include "./miccup")
+
+(const electron (require 'electron)
+       fs (require 'fs)
+       path (require 'path))
 
 (set window 'Datastore (require "nedb"))
 (var DB (new Datastore { filename: "store.db"
@@ -32,11 +37,11 @@
           url (if (= 1 (length arglist))
                   (first arglist)
                   (last arglist)))
-     (|> (get_webview wv-idx)
+     (|> (getWebview wv-idx)
          (.setAttribute "src" url)))
 
 (def get-webview-url (wv-idx)
-     (|> (get_webview wv-idx)
+     (|> (getWebview wv-idx)
          (.getAttribute "src")))
 
 (def style2object (style)
@@ -64,8 +69,6 @@
 
 ;; yaml based data control
 (var jsyaml (require "js-yaml")
-     fs (require "fs")
-     electron (require "electron")
      __session-dir-path (resolve-asset-dir "session")
      __handler-dir-path (resolve-asset-dir "handler")
      __plugin-dir-name "plugin"
@@ -242,7 +245,7 @@
                             ;; (+ "common.fire_event_on('" locater.selector "', 'Click')")
                             ))
                    (when exec-string
-                         (|> (get_webview)
+                         (|> (getWebview)
                              (execjs
                               exec-string)))
                    ) }
@@ -434,5 +437,9 @@
                                         (get 'render)))
                                    ]
                                   ]))))})
-(m.mount (document.getElementById "control-container")
-         ui)
+
+(def setup-control-container! (element)
+     (m.mount element ui))
+
+(set exports
+     'setup-control-container setup-control-container!)

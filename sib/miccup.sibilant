@@ -1,7 +1,7 @@
 (include "./macro")
 
-(var m (require 'mithril)
-     $ (require 'jquery))
+(const m (require 'mithril)
+       $ (require 'jquery))
 
 (def m-miccup (miccup)
      ;; miccup to mithril
