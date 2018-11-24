@@ -11,6 +11,10 @@
 (var exports {})
 (set module 'exports exports)
 
+(def resolve-asset-dir (dirname)
+     (|> (path.join global.__dirname dirname)
+         (path.resolve)))
+
 (def flash-element (el duration interval)
      (var overlay (document.createElement "div")
           el-bbox (el.getBoundingClientRect)

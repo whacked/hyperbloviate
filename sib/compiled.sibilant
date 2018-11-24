@@ -53,7 +53,7 @@
            (var key (get style i)
                 val (get style key))
            (when (!= val "initial")
-            (set rtn key val)))
+                 (set rtn key val)))
      rtn)
 
 (def attr2object (attr)
@@ -85,8 +85,8 @@
                     active-session: (m-prop)})
 
 (var WebViewDriver { exec: (#(channel arg)
-                       (var func (get WebViewDriver channel))
-                       (when func (func arg))) })
+                             (var func (get WebViewDriver channel))
+                             (when func (func arg))) })
 (set WebViewDriver Const.WEBVIEW_ELEMENT_CLICK
      (#(js)
        (var asess (control-state.active-session))
