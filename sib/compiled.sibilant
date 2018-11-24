@@ -6,7 +6,8 @@
 
 (const electron (require 'electron)
        fs (require 'fs)
-       path (require 'path))
+       path (require 'path)
+       sibilant (require 'sibilant))
 
 (set window 'Datastore (require "nedb"))
 (var DB (new Datastore { filename: "store.db"
@@ -126,6 +127,9 @@
           #)))
 
 (def load-all-plugins! ()
+     (when (not (fs.existsSync __plugin-dir-path))
+           (fs.mkdirSync __plugin-dir-path))
+     
      (fs.readdir
       __plugin-dir-path
       (#(err file-list)
@@ -142,9 +146,9 @@
                                       (.map get-plugin-file-relpath)
                                       (.filter fs.existsSync)
                                       (first))
-                   init-plugin (#() (alert
-                                     (+ "[OVERRIDE] if you are seeing this message, "
-                                        "the plugin was NOT loaded properly"))))
+                   start-plugin! (#() (alert
+                                       (+ "[OVERRIDE] if you are seeing this message, "
+                                          "the plugin was NOT loaded properly"))))
 
               (when maybe-sib-file
                     ;; this will likely stop working in the future
@@ -152,11 +156,13 @@
                         (fs.readFileSync "utf-8")
                         (sibilant.sibilize)
                         (eval))
-                    ;; after eval, we expect to have "init-plugin" in the namespace
+                    ;; after eval, we expect to have these in the namespace:
+                    ;; - plugin-info
+                    ;; - start-plugin!()
                     (set out plugin-name
                          (make-plugin-object
-                          plugin-description
-                          init-plugin))
+                          (get plugin-info 'description)
+                          start-plugin!))
                     ;; if the eval fails, investigate this method
                     ;; (compile-sibilant-plugin! maybe-sib-file)
                     )
@@ -173,8 +179,8 @@
                                      plugin-name))))
                    (set out plugin-name
                         (make-plugin-object
-                         (get plugin-module 'description)
-                         (get plugin-module 'init-plugin))))))
+                         (get plugin-module 'info 'description)
+                         (get plugin-module 'start))))))
         (control-state.plugin-mapping out))))
 
 (def make-session (url name)
