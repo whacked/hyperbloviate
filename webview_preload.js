@@ -36,6 +36,11 @@ ipcRenderer.on("executePlugin", function(evt, pluginName) {
     ipcRenderer.sendToHost(Const.WEBVIEW_EVENT_CHANNEL, res);
 });
 
+ipcRenderer.on("test-message", function(evt, arg) {
+    console.log("hi from webview")
+    ipcRenderer.sendToHost("test-message-host", ["client", arg]);
+});
+
 window.addEventListener("DOMContentLoaded", function() {
     document.body.addEventListener("contextmenu", common.procRightClick, true);
 });
