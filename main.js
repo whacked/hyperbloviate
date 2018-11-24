@@ -18,13 +18,12 @@ app.on("ready", function() {
 
     ipcMain.on("ipc", (event, arg) => {
         console.log("---- got event in ipc");
-        // console.log(event);
+        console.log(event);
         console.log(arg);
     });
     ipcMain.on("test", (event, arg) => {
         console.log("---- got event in TEST");
-        // console.log(event);
+        console.log(event);
         console.log(arg);
     });
-
 });
