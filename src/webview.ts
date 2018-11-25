@@ -5,7 +5,7 @@ import {
 
 import {
     Const,
-} from "./common";
+} from "./constant";
 
 export function getWebview(maybeWebviewIndex = 0): any {
     if(maybeWebviewIndex != null

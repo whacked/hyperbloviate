@@ -6,6 +6,9 @@ const electron = require("electron"),
 
 import {
     Const,
+} from "./constant";
+
+import {
     clickSelector,
     fireEventOn,
     procRightClick,

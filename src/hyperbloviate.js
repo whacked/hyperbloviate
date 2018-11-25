@@ -1,7 +1,7 @@
 "use strict";
 exports.__esModule = true;
 var electron = require("electron"), app = electron.remote.app, m = require("mithril"), mProp = require("mithril/stream");
-var common_1 = require("./common");
+var constant_1 = require("./constant");
 var eventDispatch_1 = require("./eventDispatch");
 var webview_1 = require("./webview");
 var uiSetup_1 = require("./uiSetup");
@@ -39,8 +39,8 @@ var checkjq = setInterval(function () {
                 eval(sibilant.sibilize(el.innerText));
             }
         });
-        eventDispatch_1.DispatcherMapping.set(common_1.Const.WEBVIEW_ELEMENT_CLICK, function (arg) {
-            WebViewDriver.exec(common_1.Const.WEBVIEW_ELEMENT_CLICK, arg);
+        eventDispatch_1.DispatcherMapping.set(constant_1.Const.WEBVIEW_ELEMENT_CLICK, function (arg) {
+            WebViewDriver.exec(constant_1.Const.WEBVIEW_ELEMENT_CLICK, arg);
         });
         // injection test
         eventDispatch_1.DispatcherMapping.set("test-message-host", function (arg) {

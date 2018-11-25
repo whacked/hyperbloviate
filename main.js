@@ -13,7 +13,7 @@ app.on("ready", function() {
             preload: path.resolve(path.join(__dirname, "electron-preload.js"))
         }
     });
-    mainWindow.loadURL("index.html");
+    mainWindow.loadURL(`file://${__dirname}/index.html`);
     mainWindow.openDevTools();
 
     ipcMain.on("ipc", (event, arg) => {
