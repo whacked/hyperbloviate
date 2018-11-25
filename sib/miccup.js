@@ -1,7 +1,8 @@
-var m = require("mithril"),
+const m = require("mithril"),
+    mProp = require("mithril/stream"),
     $ = require("jquery");
 var mMiccup = (function mMiccup$(miccup) {
-  /* m-miccup miccup.sibilant:1:79 */
+  /* m-miccup miccup.sibilant:7:0 */
 
   return (function() {
     if (!(Array.isArray(miccup))) {
@@ -10,11 +11,11 @@ var mMiccup = (function mMiccup$(miccup) {
       return miccup;
     } else if (Array.isArray(miccup[0])) {
       return (function() {
-        /* miccup.sibilant:1:318 */
+        /* miccup.sibilant:16:9 */
       
         var out = [];
         miccup.forEach((function(hh, i) {
-          /* miccup.sibilant:1:361 */
+          /* miccup.sibilant:18:10 */
         
           return (function() {
             if (0 < hh.length) {
@@ -26,7 +27,7 @@ var mMiccup = (function mMiccup$(miccup) {
       }).call(this);
     } else {
       return (function() {
-        /* miccup.sibilant:1:534 */
+        /* miccup.sibilant:23:9 */
       
         var tag = miccup[0],
             maybeAttr = miccup[1],
@@ -47,7 +48,7 @@ var mMiccup = (function mMiccup$(miccup) {
         }).call(this),
             out = [ tag, attr ];
         miccup.slice(remainderStart).forEach((function(hh, i) {
-          /* miccup.sibilant:1:893 */
+          /* miccup.sibilant:31:10 */
         
           return out.push(mMiccup(hh));
         }));
@@ -57,7 +58,7 @@ var mMiccup = (function mMiccup$(miccup) {
   }).call(this);
 });
 var jqMiccup = (function jqMiccup$(miccup) {
-  /* jq-miccup miccup.sibilant:1:1011 */
+  /* jq-miccup miccup.sibilant:35:0 */
 
   return (function() {
     if ((!(Array.isArray(miccup)) || 0 === miccup.length)) {
@@ -66,7 +67,7 @@ var jqMiccup = (function jqMiccup$(miccup) {
       return (function() {
         var out = [];
         miccup.forEach((function(hh, i) {
-          /* miccup.sibilant:1:1294 */
+          /* miccup.sibilant:44:10 */
         
           return (function() {
             if (0 < hh.length) {
@@ -78,7 +79,7 @@ var jqMiccup = (function jqMiccup$(miccup) {
       }).call(this);
     } else {
       return (function() {
-        /* miccup.sibilant:1:1444 */
+        /* miccup.sibilant:49:9 */
       
         var tag = miccup[0],
             maybeAttr = miccup[1],
@@ -123,7 +124,7 @@ var jqMiccup = (function jqMiccup$(miccup) {
   }).call(this);
 });
 var dom2miccup = (function dom2miccup$(el) {
-  /* dom2miccup miccup.sibilant:1:2295 */
+  /* dom2miccup miccup.sibilant:70:0 */
 
   return (function() {
     if (!(el)) {
@@ -132,10 +133,10 @@ var dom2miccup = (function dom2miccup$(el) {
       return el.textContent;
     } else if (true) {
       return (function() {
-        /* miccup.sibilant:1:2444 */
+        /* miccup.sibilant:76:9 */
       
         var rtn = [ el.tagName.toLowerCase(), (function() {
-          /* miccup.sibilant:1:2519 */
+          /* miccup.sibilant:78:20 */
         
           var style = style2object(el.style),
               attr = attr2object(el.attributes);
@@ -147,7 +148,7 @@ var dom2miccup = (function dom2miccup$(el) {
           return attr;
         }).call(this) ];
         el.childNodes.forEach((function(node, i) {
-          /* miccup.sibilant:1:2909 */
+          /* miccup.sibilant:86:10 */
         
           return rtn.push(dom2miccup(node));
         }));

@@ -1,6 +1,4 @@
 const edn = require("jsedn"),
-    path = require("path"),
-    m = require("mithril"),
     GoldenLayout = require("golden-layout");
 
 function keywordizeKeys(jsEdnObject) {
