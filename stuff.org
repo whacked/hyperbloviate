@@ -1,3 +1,0 @@
-
-selector 
-http://stackoverflow.com/questions/5706837/get-unique-selector-of-element-in-jquery
