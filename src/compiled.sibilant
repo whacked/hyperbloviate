@@ -1,25 +1,32 @@
 (console.log "sibilant from compiled file")
 (include "./macro")
+(include "./common")
 (include "./universal")
 (include "./miccup")
 
+(const electron (require 'electron)
+       fs (require 'fs)
+       path (require 'path)
+       sibilant (require 'sibilant))
+
 (set window 'Datastore (require "nedb"))
-(var DB (new Datastore { filename: "store.db"
-                         autoload: true
-                         timestampData: true })
+(var DB (new Datastore {filename: "store.db"
+                        autoload: true
+                        timestampData: true })
      ;;  currently not used
-     db { load: (#>
-                 (DB.findOne
-                  { url: (get-webview-url) }
-                  (#(err, doc)
-                    (m-transact!
-                     (when doc
-                           (get doc 'click-history)
-                           )))))
-          save: (#>
-                 (DB.insert { url: (get-webview-url)
-                              'click-history: [] }))
-          }
+     db {_store: DB
+         load: (#>
+                (DB.findOne
+                 {url: (get-webview-url)}
+                 (#(err, doc)
+                   (console.log
+                    "loaded" doc)
+                   (when doc
+                         (get doc 'click-history)))))
+         save: (#>
+                (DB.insert {url: (get-webview-url)
+                            'click-history: [] }))
+         }
      jsyaml (require "js-yaml"))
 
 ;; utility
@@ -32,11 +39,11 @@
           url (if (= 1 (length arglist))
                   (first arglist)
                   (last arglist)))
-     (|> (get_webview wv-idx)
+     (|> (getWebview wv-idx)
          (.setAttribute "src" url)))
 
 (def get-webview-url (wv-idx)
-     (|> (get_webview wv-idx)
+     (|> (getWebview wv-idx)
          (.getAttribute "src")))
 
 (def style2object (style)
@@ -46,7 +53,7 @@
            (var key (get style i)
                 val (get style key))
            (when (!= val "initial")
-            (set rtn key val)))
+                 (set rtn key val)))
      rtn)
 
 (def attr2object (attr)
@@ -64,31 +71,28 @@
 
 ;; yaml based data control
 (var jsyaml (require "js-yaml")
-     fs (require "fs")
-     electron (require "electron")
      __session-dir-path (resolve-asset-dir "session")
      __handler-dir-path (resolve-asset-dir "handler")
-     __plugin-dir-name "plugin"
-     __plugin-dir-path (resolve-asset-dir __plugin-dir-name))
+     __plugin-dir-path (resolve-asset-dir (get Conf "PLUGIN_DIR_NAME")))
 
 ;; housekeeping
 (when (not (fs.existsSync __session-dir-path))
       (fs.mkdirSync __session-dir-path))
 
-(var control-state {session-list: (m.prop [])
-                    handler-mapping: (m.prop {})
-                    plugin-mapping: (m.prop {})
-                    active-session: (m.prop)})
+(var control-state {session-list: (m-prop [])
+                    handler-mapping: (m-prop {})
+                    plugin-mapping: (m-prop {})
+                    active-session: (m-prop)})
 
 (var WebViewDriver { exec: (#(channel arg)
-                       (var func (get WebViewDriver channel))
-                       (when func (func arg))) })
+                             (var func (get WebViewDriver channel))
+                             (when func (func arg))) })
 (set WebViewDriver Const.WEBVIEW_ELEMENT_CLICK
      (#(js)
        (var asess (control-state.active-session))
        (if (not asess)
            (alert "no active session")
-           (m-transact!
+           (do
             (var locater (JSON.parse js))
             (asess.history.push locater)
             (set asess 'is-dirty true)
@@ -101,48 +105,96 @@
       __session-dir-path
       (#(err file-list)
         (var re-yml (regex "yml$"))
-        (m-transact!
-         (control-state.session-list
-          (|> file-list
-              (.filter (#(fname)
-                         (fname.match re-yml)))
-              (.map (#(fname)
-                      (|> (path.join __session-dir-path fname)
-                          (fs.readFileSync "utf-8")
-                          (jsyaml.safeLoad)
-                          (tap (set 'filename fname)))))))))))
-(load-all-sessions!)
+        (control-state.session-list
+         (|> (or file-list [])
+             (.filter (#(fname)
+                        (fname.match re-yml)))
+             (.map (#(fname)
+                     (|> (path.join __session-dir-path fname)
+                         (fs.readFileSync "utf-8")
+                         (jsyaml.safeLoad)
+                         (tap (set 'filename fname)))))))
+        (m.redraw))))
+
+(def make-plugin-object (desc init)
+     {init: init
+      description: desc})
+
+(def compile-sibilant-plugin! (plugin-sibilant-path)
+     (|> plugin-sibilant-path
+         (fs.readFileSync "utf-8")
+         (sibilant.sibilize)
+         (fs.writeFileSync
+          (path.join
+           (path.dirname plugin-sibilant-path)
+           "index.js")
+          #)))
 
 (def load-all-plugins! ()
+     (when (not (fs.existsSync __plugin-dir-path))
+           (fs.mkdirSync __plugin-dir-path))
+     
      (fs.readdir
       __plugin-dir-path
       (#(err file-list)
         (var out {})
-        (each (fname i) file-list
-              (var spl (fname.split ".")
-                   basename (if (< 1 spl.length)
-                                (fname.substring
-                                 0 (- fname.length 1
-                                      (get (last spl) 'length))))
-                   ext (if (= 1 spl.length)
-                           null
-                           (last spl)))
-              (when (= ext "js")
-                    (if (get out basename)
-                        (console.log "skipping: " fname "because already loaded")
-                        (set out basename
-                             (require (+ "./" (path.join __plugin-dir-name fname)))))))
-        (m-transact!
-         (control-state.plugin-mapping out)))))
-(load-all-plugins!)
+        (each (plugin-name i) (or file-list [])
+              (var spl (plugin-name.split ".")
+                   get-plugin-file-relpath (#(plugin-file)
+                                             (path.join
+                                              __plugin-dir-path
+                                              plugin-name
+                                              plugin-file))
+                   maybe-sib-file (|> ["index.sib"
+                                       "index.sibilant"]
+                                      (.map get-plugin-file-relpath)
+                                      (.filter fs.existsSync)
+                                      (first))
+                   start-plugin! (#() (alert
+                                       (+ "[OVERRIDE] if you are seeing this message, "
+                                          "the plugin was NOT loaded properly"))))
+
+              (when maybe-sib-file
+                    ;; this will likely stop working in the future
+                    (|> maybe-sib-file
+                        (fs.readFileSync "utf-8")
+                        (sibilant.sibilize)
+                        (eval))
+                    ;; after eval, we expect to have these in the namespace:
+                    ;; - plugin-info
+                    ;; - start-plugin!()
+                    (set out plugin-name
+                         (make-plugin-object
+                          (get plugin-info 'description)
+                          start-plugin!))
+                    ;; if the eval fails, investigate this method
+                    ;; (compile-sibilant-plugin! maybe-sib-file)
+                    )
+
+              (if (get out plugin-name)
+                  (console.warn (+ "already loaded: " plugin-name))
+                  
+                  (fs.existsSync (get-plugin-file-relpath "index.js"))
+                  (do
+                   (var plugin-module
+                        (require (+ "../"
+                                    (path.join
+                                     (get Conf "PLUGIN_DIR_NAME")
+                                     plugin-name))))
+                   (set out plugin-name
+                        (make-plugin-object
+                         (get plugin-module 'info 'description)
+                         (get plugin-module 'start))))))
+        (control-state.plugin-mapping out)
+        (m.redraw))))
 
 (def make-session (url name)
      {url: url
       name: name
       history: []
       })
-(var ui-state {selected-tab: (m.prop 'saved-urls)
-               scratch-view: (m.prop)})
+(var ui-state {selected-tab: (m-prop 'plugin-list)
+               scratch-view: (m-prop)})
 
 (def render-session-list (session-list)
      (var asess (control-state.active-session)
@@ -231,7 +283,7 @@
                                 (and (= locater.tag "input")
                                      (or (= locater.type "submit")
                                          (= locater.type "button"))))
-                            (+ "common.click_selector('" locater.selector "')")
+                            (+ "common.clickSelector('" locater.selector "')")
                             
                             true
                             (+ "document.querySelector('"
@@ -239,14 +291,15 @@
                                "').scrollIntoView({behavior: \"smooth\"})")
                             
                             null
-                            ;; (+ "common.fire_event_on('" locater.selector "', 'Click')")
+                            ;; (+ "common.fireEventOn('" locater.selector "', 'Click')")
                             ))
                    (when exec-string
-                         (|> (get_webview)
-                             (execjs
+                         (|> (getWebview)
+                             (execJs
                               exec-string)))
                    ) }
         (JSON.stringify locater)]]])
+
 (def action-list-view ()
      (var sess (control-state.active-session))
      (if sess
@@ -273,39 +326,54 @@
                  [["hr"]
                   ["button"
                    {onclick: (#>
-                              (m-transact!
-                               (delete sess.is-dirty)
-                               (var new-session-list [])
-                               (each (iter-sess) (control-state.session-list)
-                                     (new-session-list.push
-                                      (if (= iter-sess.filename
-                                             sess.filename)
-                                          sess
-                                          iter-sess)))
-                               (control-state.session-list new-session-list)
-                               (control-state.active-session sess)
-                               (var filepath (path.join __session-dir-path sess.filename))
-                               (fs.writeFile
-                                filepath
-                                (jsyaml.safeDump sess)
-                                (#(err)
-                                  (if err
-                                      (alert (+ "file write failed!\n"
-                                                (.toString err)))
-                                      (console.log (+ "wrote: " filepath)))))
-                               ))}
+                              (delete sess.is-dirty)
+                              (var new-session-list [])
+                              (each (iter-sess) (control-state.session-list)
+                                    (new-session-list.push
+                                     (if (= iter-sess.filename
+                                            sess.filename)
+                                         sess
+                                         iter-sess)))
+                              (control-state.session-list new-session-list)
+                              (control-state.active-session sess)
+                              (var filepath (path.join __session-dir-path sess.filename))
+                              (fs.writeFile
+                               filepath
+                               (jsyaml.safeDump sess)
+                               (#(err)
+                                 (if err
+                                     (alert (+ "file write failed!\n"
+                                               (.toString err)))
+                                     (console.log (+ "wrote: " filepath)))))
+                              )}
                    "save!"]])]]))
 
 (def plugin-list-view ()
+     (var plugin-mapping (control-state.plugin-mapping)
+          control-element (document.getElementById "panel-A")
+          view-element (document.getElementById "panel-B"))
      ["div"
-      ["ol"
+      ["table"
        {style: {margin: "0.5em"
                 padding: "0.5em"}}
-       (|> (control-state.plugin-mapping)
-           (Object.keys)
-           (mapcar (#(k)
-                     ["li" k])
-                   #))]])
+       ["tbody"
+        ["tr"
+         ["th" "name"]
+         ["th" "description"]]
+        (|> plugin-mapping
+            (Object.keys)
+            (mapcar (#(k)
+                      (var initialize! (get plugin-mapping k 'init))
+                      ["tr"
+                       ["td"
+                        ["button"
+                         {onclick: (#>
+                                    (initialize!
+                                     control-element view-element)
+                                    (webviewControl.attachWebviewEventListeners 0))}
+                         k]]
+                       ["td" (get plugin-mapping k 'description)]])
+                    #))]]])
 
 (var ui {controller: (#>
                       (console.info "in controller")
@@ -315,7 +383,7 @@
                                 ;; find out nicer way to DRY
                                 bare-state: {name: null
                                              url: null}
-                                state: (m.prop {name: null
+                                state: (m-prop {name: null
                                                 url: null})
                                 render: (#>
                                          (var self this)
@@ -363,12 +431,11 @@
                                                                                     (regex "^(.+://)")
                                                                                     "")
                                                                           ".yml")))
-                                                              (m-transact!
-                                                               (self.state self.bare-state)
-                                                               (|> (control-state.session-list)
-                                                                   (.push new-session))
-                                                               (control-state.active-session
-                                                                new-session)))
+                                                              (self.state self.bare-state)
+                                                              (|> (control-state.session-list)
+                                                                  (.push new-session))
+                                                              (control-state.active-session
+                                                               new-session))
                                                         )}
                                              "start new session"]]
                                            ]
@@ -384,7 +451,7 @@
                                  render: action-list-view}
 
                    plugin-list: {label: "plugin list"
-                                  render: plugin-list-view}
+                                 render: plugin-list-view}
 
                    scratch: {label: "scratch"
                              render: (#>
@@ -434,5 +501,12 @@
                                         (get 'render)))
                                    ]
                                   ]))))})
-(m.mount (document.getElementById "control-container")
-         ui)
+
+(def setup-control-container! (element)
+     (m.mount element ui)
+     (load-all-sessions!)
+     (load-all-plugins!))
+
+(set exports
+     'setupControlContainer setup-control-container!
+     'db db)

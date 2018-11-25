@@ -1,0 +1,10 @@
+(var Const {"WEBVIEW_ELEMENT_CLICK": "webview-element-click"
+            "WEBVIEW_EVENT_CHANNEL": "chn-webview"})
+
+;; for debugging
+(var Conf {"OUTPUT_EVAL": true
+           "PLUGIN_DIR_NAME": "plugin"})
+
+(set exports
+     'Const Const
+     'Conf Conf)

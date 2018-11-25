@@ -1,16 +1,46 @@
-const common = require("./sib/common");
+const constant = require("./src/constant"),
+    Const = constant.Const,
+    Conf = constant.Conf;
+const common = require("./src/common");
+
+const path = require("path"),
+    fs = require("fs");
 const {ipcRenderer} = require("electron");
 const {CssSelectorGenerator} = require("css-selector-generator");
 
-ipcRenderer.on("get-html", function(evt, arg) {
-    ipcRenderer.sendToHost("chn-webview", "naka kara " + arg, 1, 2, 3);
+// cache plugin map
+var PluginMap = {};
+fs.readdirSync(Conf.PLUGIN_DIR_NAME).forEach(function(pluginName) {
+    console.log(pluginName)
+    const pluginPath = "./" + Conf.PLUGIN_DIR_NAME + "/" + pluginName;
+    try {
+        PluginMap[pluginName] = require(pluginPath);
+    } catch(e) {
+        console.info("failed to load plugin " + pluginName);
+        console.warn(e);
+    }
 });
 
 ipcRenderer.on("eval", function(evt, arg) {
     var res = eval(arg);
-    ipcRenderer.sendToHost("chn-webview", res);
+    ipcRenderer.sendToHost(Const.WEBVIEW_EVENT_CHANNEL, res);
+});
+
+ipcRenderer.on("executePlugin", function(evt, pluginName) {
+    var maybePlugin = PluginMap[pluginName];
+    if(!maybePlugin) {
+        console.warn("no such plugin: " + pluginName);
+        return;
+    }
+    var res = maybePlugin.execute();
+    ipcRenderer.sendToHost(Const.WEBVIEW_EVENT_CHANNEL, res);
+});
+
+ipcRenderer.on("test-message", function(evt, arg) {
+    console.log("hi from webview")
+    ipcRenderer.sendToHost("test-message-host", ["client", arg]);
 });
 
 window.addEventListener("DOMContentLoaded", function() {
-    document.body.addEventListener("contextmenu", common.proc_right_click, true);
+    document.body.addEventListener("contextmenu", common.procRightClick, true);
 });

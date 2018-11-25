@@ -4,8 +4,16 @@ node_modules
 .#*
 
 # sibilant generated
-sib/*.map
+src/*.map
 
 # session data
 data
 store.db
+*.*~
+*.sw*
+
+# plugins dir
+plugin/*
+
+# from kindle highlights plugin
+kindle

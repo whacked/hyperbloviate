@@ -3,19 +3,22 @@
     "toolbar": true
   },
   "dependencies": {
+    "@types/node": "^10.12.10",
     "body-parser": "^1.15.2",
     "cheerio": "^0.22.0",
     "chokidar": "^1.6.1",
     "connect": "^3.5.0",
     "css-selector-generator": "^1.0.2",
     "domutils": "^1.5.1",
+    "electron-typescript-definitions": "^3.0.0",
     "express": "^4.14.0",
     "font-awesome": "^4.7.0",
     "golden-layout": "^1.5.6",
     "immutable": "^3.8.1",
     "jquery": "^3.1.1",
     "js-yaml": "^3.7.0",
-    "mithril": "^0.2.5",
+    "jsedn": "^0.4.1",
+    "mithril": "^1.1.6",
     "multitransport-jsonrpc": "^0.9.4",
     "nedb": "^1.8.0",
     "sibilant": "^0.5.5"

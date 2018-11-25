@@ -5,6 +5,5 @@
           (#(err, docs)
             (when docs
                   (var state (control-state))
-                  (m-transact!
-                   (set state 'session-list ["a" "b"]))
+                  (set state 'session-list ["a" "b"])
                   (console.log docs)))))

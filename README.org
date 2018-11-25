@@ -1,1 +1,64 @@
-node electron <--> emacs with sibilant
+* hyperbloviate
+
+  Aims to be a drivable electron frame with some controls to drive a
+  webview for some site where you want to automate some behavior.
+
+  [[file:doc/img/screenshot.png]]
+
+* usage
+
+  clone this repository, run =npm install=, then =npm start=
+
+* plugins
+
+  plugins should be placed in the =plugin= directory within the app
+  directory.
+
+  working examples:
+
+  - https://github.com/whacked/hyperbloviate-kindle-highlights
+  - https://github.com/whacked/hyperbloviate-example-plugin
+  
+* developing plugins
+
+  currently, the plugin mechanism targets running live [[https://sibilant.org/][sibilant]]
+  code. The sibilant modules have full visibility to the node
+  libraries from the main process.
+  
+  in general, plugins can make use of these functions bound to
+  =window= (set in [[file:electron-preload.js]]), defined in
+  [[file:src/webview.ts]], such as
+
+  - execJs
+  - getWebview
+  
+  in the sibilant code plugins should define:
+  
+  - =plugin-info= :: map containing e.g. the =description= key
+  - =start-plugin!(control-element, view-element)= :: initializer function
+    - =control-element= is a DOM element where the plugin may or may not
+      render control components
+    - =view-element= is a DOM element which presumably renders a webpage
+      that the plugin controls
+    
+* development overview
+
+  the code is a mixture of vanilla JS, Sibilant, and [[https://www.typescriptlang.org/][TypeScript]]
+
+  layout is handled by [[https://golden-layout.com/][GoldenLayout]]. GL has a dependency on jQuery,
+  though we will try to eventually minimize jQuery calls.
+
+  rendering is handled by [[http://mithril.js.org/][Mithril]]. There are probably many old bits
+  written for Mithril pre-0.2, but should be eventually updated.
+
+** dev environment
+
+   currently running
+   
+   - tsc :: 3.1.6
+   - sibilant :: 0.5.5
+
+   - [[file:main.js]] :: electron entrypoint
+   - [[file:electron-preload.js]] :: app housekeeping
+   - [[file:src/hyperbloviate.ts]] :: current app setup entrypoint
+
