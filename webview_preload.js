@@ -1,7 +1,7 @@
-const constant = require("./sib/constant"),
+const constant = require("./src/constant"),
     Const = constant.Const,
     Conf = constant.Conf;
-const common = require("./sib/common");
+const common = require("./src/common");
 
 const path = require("path"),
     fs = require("fs");

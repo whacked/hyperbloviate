@@ -8,13 +8,13 @@ window.addEventListener('load', ()  => {
   // required for golden layout to function
   window.$ = require("./node_modules/jquery/dist/jquery.min.js");
 
-  const common = require("./sib/common"),
+  const common = require("./src/common"),
         Const = common.Const,
         Immutable = require("./node_modules/immutable/dist/immutable.min.js"),
         m = require("./node_modules/mithril/mithril.min.js"),
         sibilant = require("./node_modules/sibilant/lib/browser.js").sibilant,
-        Hyperbloviate = require("./sib/hyperbloviate.js"),
-        JsonRpcServer = require("./sib/jsonRpcServer.js").Server,
+        Hyperbloviate = require("./src/hyperbloviate.js"),
+        JsonRpcServer = require("./src/jsonRpcServer.js").Server,
         {ipcRenderer} = require("electron");
 
   JsonRpcServer.start();
@@ -25,7 +25,7 @@ window.addEventListener('load', ()  => {
   window.ipcRenderer = ipcRenderer;
 
   // for plugin interaction
-  const WebviewControl = require("./sib/webview");
+  const WebviewControl = require("./src/webview");
   window.webviewControl = WebviewControl;
   window.execJs = WebviewControl.execJs;
   window.getWebview = WebviewControl.getWebview;
