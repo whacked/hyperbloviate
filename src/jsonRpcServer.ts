@@ -41,6 +41,11 @@ export namespace Server {
     var JRPC_PORT;
     var _server_object;
 
+    export var HandlerMapping = {
+        javascript: javascriptHandler,
+        sibilant: sibilantHandler,
+    }
+
     export function stop() {
         this._server_object.close();
         this._server_object = null;
@@ -61,10 +66,10 @@ export namespace Server {
 
         var app = express();
         app.use(bodyParser.json());
-        var jsonRpcMiddlewareServer = new JrpcServer(new ServerMiddleware(), {
-            javascript: javascriptHandler,
-            sibilant: sibilantHandler
-        });
+        var jsonRpcMiddlewareServer = new JrpcServer(
+            new ServerMiddleware(),
+            HandlerMapping,
+        );
         app.use('/rpc', jsonRpcMiddlewareServer.transport.middleware);
         this._server_object = app.listen(JRPC_PORT);
     }

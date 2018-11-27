@@ -38,6 +38,10 @@ var Server;
 (function (Server) {
     var JRPC_PORT;
     var _server_object;
+    Server.HandlerMapping = {
+        javascript: javascriptHandler,
+        sibilant: sibilantHandler
+    };
     function stop() {
         this._server_object.close();
         this._server_object = null;
@@ -55,10 +59,7 @@ var Server;
         var ServerMiddleware = jsonrpc.transports.server.middleware;
         var app = express();
         app.use(bodyParser.json());
-        var jsonRpcMiddlewareServer = new JrpcServer(new ServerMiddleware(), {
-            javascript: javascriptHandler,
-            sibilant: sibilantHandler
-        });
+        var jsonRpcMiddlewareServer = new JrpcServer(new ServerMiddleware(), Server.HandlerMapping);
         app.use('/rpc', jsonRpcMiddlewareServer.transport.middleware);
         this._server_object = app.listen(JRPC_PORT);
     }
