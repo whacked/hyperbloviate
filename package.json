@@ -22,7 +22,8 @@
     "nedb": "^1.8.0",
     "sibilant": "^0.5.5"
   },
-  "name": "drivable",
+  "name": "hyperbloviate",
+  "version": "0.0.1",
   "main": "main.js",
   "scripts": {
     "start": "electron ."
