@@ -61,7 +61,8 @@ var Server;
         app.use(bodyParser.json());
         var jsonRpcMiddlewareServer = new JrpcServer(new ServerMiddleware(), Server.HandlerMapping);
         app.use('/rpc', jsonRpcMiddlewareServer.transport.middleware);
-        this._server_object = app.listen(JRPC_PORT);
+        this._app = app;
+        this._server_object = app.listen(this.JRPC_PORT);
     }
     Server.start = start;
 })(Server = exports.Server || (exports.Server = {}));

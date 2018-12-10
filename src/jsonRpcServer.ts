@@ -71,6 +71,7 @@ export namespace Server {
             HandlerMapping,
         );
         app.use('/rpc', jsonRpcMiddlewareServer.transport.middleware);
-        this._server_object = app.listen(JRPC_PORT);
+        this._app = app;
+        this._server_object = app.listen(this.JRPC_PORT);
     }
 }

@@ -18,6 +18,7 @@ window.addEventListener('load', ()  => {
   Hyperbloviate.setupDefaultUi(document.body);
   
   window.Hyperbloviate = Hyperbloviate;
+  window.JsonRpcServer = JsonRpcServer;
   window.ipcRenderer = electron.ipcRenderer;
 
   // for plugin interaction
