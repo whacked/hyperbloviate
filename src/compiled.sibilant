@@ -1,8 +1,8 @@
 (console.log "sibilant from compiled file")
-(include "./macro")
+(include "./wksymsib/src/macro")
 (include "./common")
-(include "./universal")
-(include "./miccup")
+(include "./wksymsib/src/universal")
+(include "./wksymsib/src/miccup")
 
 (const electron (require 'electron)
        fs (require 'fs)

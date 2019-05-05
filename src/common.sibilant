@@ -1,6 +1,5 @@
 ;; common between host window and hosted webviews
-(include "./universal")
-
+(include "./wksymsib/src/universal")
 (include "./constant")
 
 (var require-CssSelectorGenerator (require "css-selector-generator")
