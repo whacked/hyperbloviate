@@ -1,0 +1,105 @@
+;; universal sharable code that should be pure js
+(def identity (x) x)
+
+(def maybe-get (obj attr)
+      (if obj
+          (get obj attr)
+          null))
+
+(def mapcar (func list)
+     (var rtn [])
+     (each (o i) list
+           (rtn.push (func o i)))
+     rtn)
+
+(def merge ()
+     (|> (Array.prototype.slice.call arguments)
+         (tap (.unshift {}))
+         (Object.assign.apply null #)))
+
+(def range ()
+     ;; arguments is a tricky structure! >:-(
+     ;; (get arguments 1) gives undefined
+     (var arglist (Array.prototype.slice.call arguments)
+          beg (if (= 2 arglist.length)
+                  (get arglist 0)
+                  0)
+          end (if (= 2 arglist.length)
+                  (get arglist 1)
+                  (get arglist 0))
+          out [])
+     (while (< beg end)
+            (out.push beg)
+            (incr beg))
+     out)
+
+(def seq [x]
+     (Array.prototype.slice.call x))
+
+(def trim (s)
+     (|> s
+         (replace (regex "^\\s*") "")
+         (replace (regex "\\s*$") "")))
+
+(def deep-copy (obj)
+     (|> obj
+         (JSON.stringify)
+         (JSON.parse)))
+
+(def drill-get (gettable path)
+     ;; (drill-get {1: {2: [3 4 5]}} [1 2 [0 1]])
+     ;; => [3 4]
+     ;; (drill-get {1: {2: "a" b: "c"}} [1 []])
+     ;; => {2: "a" b: "c"}
+     (if (empty? path) gettable
+         (scoped
+          (var key (first path)
+               remain (rest path))
+          (if (array? gettable)
+              (if (array? key)
+                  (scoped
+                   (var out [])
+                   (each (i) (if (empty? key)
+                                 (range gettable.length)
+                                 key)
+                         (out.push (drill-get (get gettable i)
+                                              remain)))
+                   out)
+                  (drill-get (get gettable key) remain))
+
+              (object? gettable)
+              (if (array? key)
+                  (scoped
+                   (var out {})
+                   (each (k) (if (empty? key)
+                                 (Object.keys gettable)
+                                 key)
+                         (set out k (drill-get (get gettable k)
+                                               remain)))
+                   out)
+                  (drill-get (get gettable key) remain))
+
+              gettable))))
+
+(def de-emptify (arr)
+     ;; recursively removes empty arrays,
+     ;; and replace arrays with single elements to the single element
+     (if (not (array? arr))
+         arr
+         (scoped
+          (var out [])
+          (each (el) arr
+                (var processed-el (de-emptify el))
+                (when (and (exists? processed-el)
+                           (not (empty? processed-el)))
+                      (out.push processed-el)))
+          (if (= 1 out.length)
+              (first out)
+              out))))
+
+(def filter (fn coll)
+     (with-return-var
+      out []
+      (each x (seq coll)
+            (when (fn x)
+                (out.push x)))))
