@@ -26,6 +26,8 @@
   "version": "0.0.1",
   "main": "main.js",
   "scripts": {
+    "compile-typescript": "for f in src/*.ts; do tsc $f; done",
+    "compile-sibilant": "for f in src/*.sibilant; do sibilant -o src $f; done",
     "start": "electron ."
   },
   "devDependencies": {

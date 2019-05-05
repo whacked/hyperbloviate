@@ -62,3 +62,12 @@
    - [[file:electron-preload.js]] :: app housekeeping
    - [[file:src/hyperbloviate.ts]] :: current app setup entrypoint
 
+** building
+
+   main sources can be compiled using npm scripts
+
+   - =npm run compile-typescript=
+   - =npm run compile-sibilant=
+
+   this is a non-standard build process. TypeScript will show errors
+   during this build process for import paths, but we ignore them.
