@@ -1,0 +1,96 @@
+(include "./macro")
+
+(const m (require 'mithril)
+       m-prop (require "mithril/stream")
+       $ (require 'jquery))
+
+(def m-miccup (miccup)
+     ;; miccup to mithril
+     (if (not (Array.isArray miccup))
+         miccup
+         
+         (empty? miccup)
+         miccup
+
+         (Array.isArray (first miccup))
+         ;; nested array
+         (scoped
+          (var out [])
+          (each (hh i) miccup
+                (when (< 0 hh.length)
+                      (out.push (m-miccup hh))))
+          out)
+         
+         ;; normal miccup
+         (scoped
+          (var tag (first miccup)
+               maybe-attr (second miccup)
+               has-attr? (and (= (typeof maybe-attr) "object")
+                              (not (Array.isArray maybe-attr)))
+               attr (if has-attr? maybe-attr {})
+               remainder-start (if has-attr? 2 1)
+               out [tag attr])
+          (each (hh i) (miccup.slice remainder-start)
+                (out.push (m-miccup hh)))
+          (apply m out))))
+
+(def jq-miccup (miccup)
+     ;; miccup to DOM via jquery
+     (if (or (not (Array.isArray miccup))
+             (empty? miccup))
+         miccup
+         
+         (Array.isArray (first miccup))
+         ;; nested array
+         (with-return-var
+          out []
+          (each (hh i) miccup
+                (when (< 0 hh.length)
+                      (out.push (jq-miccup hh)))))
+
+         ;; normal miccup
+         (scoped
+          (var tag (first miccup)
+               maybe-attr (second miccup)
+               has-attr? (and (= (typeof maybe-attr) "object")
+                              (not (Array.isArray maybe-attr)))
+               attr (if has-attr? maybe-attr {})
+               style (or (get attr "style") {}))
+          (delete (get attr "style"))
+          (var out (|> ($ (if attr.xmlns
+                              (document.createElementNS
+                               attr.xmlns tag)
+                              (document.createElement tag)))
+                       (.attr attr)
+                       (.css style))
+               i (if has-attr? 2 1))
+          (while (< i miccup.length)
+                 (var hh (get miccup i))
+                 (incr i)
+                 (out.append (jq-miccup hh)))
+          out)))
+
+(def dom2miccup (el)
+     ;; DOM element tree to miccup
+     (if (not el) el
+         (not el.tagName)  el.textContent
+
+         true
+         (scoped
+          (var rtn [(el.tagName.toLowerCase)
+                    (scoped
+                     (var style (style2object el.style)
+                          attr (attr2object el.attributes))
+                     ;; don't output style if it's empty
+                     (when (< 0 (|> (Object.keys style)
+                                    (get "length")))
+                           (set attr "style" style))
+                     attr)])
+          (each (node i) el.childNodes
+                (rtn.push (dom2miccup node)))
+          rtn)))
+
+(set exports
+     'm-miccup m-miccup
+     'jq-miccup jq-miccup
+     'dom2miccup dom2miccup)

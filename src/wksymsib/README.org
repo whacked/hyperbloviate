@@ -1,0 +1,71 @@
+* shared sibilant files
+
+** recommended usage
+
+   use git subtree, e.g.
+
+   ==git subtree add --prefix src/wksymclj https://github.com/whacked/wksymsib master --squash=
+
+   into a given sibilant (or not) source tree; then use the [[https://docs.sibilant.org/include][include]] macro, e.g.
+
+   #+BEGIN_SRC sibilant
+   (include "./wksymsib/src/macro")
+   #+END_SRC
+   
+* dependencies
+  
+** =miccup=
+
+   the miccup library is a [[https://github.com/weavejester/hiccup][hiccup-like]] rendering solution targeting
+   [[https://mithril.js.org/stream.html][mithril-stream]]. To use it, you may need to install mithril-stream:
+
+   #+BEGIN_SRC sh :eval never
+   npm i mithril-stream
+   #+END_SRC
+   
+   - =m-miccup= :: takes miccup and targets the mithril renderer
+   - =jq-miccup= :: takes miccup and targets jquery
+   - =dom2miccup= :: takes a DOM node and constructs miccup
+
+*** example usage
+
+    #+BEGIN_SRC sibilant
+      (m-miccup
+       ["div"
+        {style: {position: "relative"
+                 float: "left"
+                 background: "#444"
+                 color: "#fff"
+                 padding: "2px"
+                 margin: "2px"
+                 width: "100%"
+                 height: "100%"}}
+        ["style"
+         "ul.tab-list { list-style-type: none }"
+         "ul.tab-list li { float: left; border: 1px solid red; margin: 2px; padding: 2px; width: 100px; }"
+         "ul.tab-list li:hover { background: gray; color: black; }"
+         "ul.tab-list li.active { background: white; color: black; }"]
+        (scoped
+         ["ul.tab-list"
+          {}
+          (mapcar (#(k i)
+                    [(+ "li"
+                        (if (= k (ui-state.selected-tab))
+                            ".active"
+                            ""))
+                     {onclick: (#>
+                                (ui-state.selected-tab k)) }
+                     (get self.tab-def k 'label)])
+                  (Object.keys self.tab-def))
+          ])
+        ["div" {style: {clear: "both" } }]
+        ["div"
+         {style: {width: "100%"
+                  height: "100%"
+                  color: "black"
+                  background: "white"
+                  }}
+         ((|> (ui-state.selected-tab)
+              (get self.tab-def #)
+              (get 'render)))]])
+    #+END_SRC
