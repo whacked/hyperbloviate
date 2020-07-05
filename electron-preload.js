@@ -9,7 +9,8 @@ window.addEventListener('load', ()  => {
   const Immutable = require("./node_modules/immutable/dist/immutable.min.js"),
         m = require("./node_modules/mithril/mithril.min.js"),
         sibilant = require("./node_modules/sibilant/lib/browser.js").sibilant,
-        Hyperbloviate = require("./src/hyperbloviate.js"),
+        // Hyperbloviate = require("./src/hyperbloviate.js"),
+        Hyperbloviate = require("./compiled/hyperbloviate.js"),
         JsonRpcServer = require("./src/jsonRpcServer.js").Server,
         WebviewControl = require("./src/webview");
 

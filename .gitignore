@@ -1,3 +1,6 @@
+.shadow-cljs
+out
+
 node_modules
 *.map
 \#*#

@@ -1,0 +1,4 @@
+{:WEBVIEW_ELEMENT_CLICK "webview-element-click"
+ :WEBVIEW_EVENT_CHANNEL "chn-webview"
+ :OUTPUT_EVAL true
+ :PLUGIN_DIR_NAME "plugin"}
