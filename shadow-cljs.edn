@@ -1,0 +1,17 @@
+;; shadow-cljs configuration
+{:source-paths
+ ["src"]
+
+ :dependencies
+ [[swiss-arrows "1.0.0" :exclusions [org.clojure]]
+  [reagent "0.10.0"]
+  [mhuebert/shadow-env "0.1.6"]]
+
+ :builds
+ {:main {:target :node-library
+         :output-to "compiled/hyperbloviate.js"
+         :build-hooks [(shadow-env.core/hook)]
+         :exports {:setupDefaultUi hyperbloviate.core/setup-default-ui
+                   :bindWebviewInterop hyperbloviate.core/bind-webview-interop}
+         }}
+ }

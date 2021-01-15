@@ -11,6 +11,8 @@ if (app) {
     app.on("ready", function () {
         mainWindow = new BrowserWindow({
             webPreferences: {
+                nodeIntegration: true,
+                webviewTag: true,
                 preload: path.resolve(path.join(__dirname, "electron-preload.js"))
             }
         });
@@ -30,7 +32,9 @@ if (app) {
     });
 } else {
     // export namespace for package use
-    exports.Hyperbloviate = require("./src/hyperbloviate");
+    // exports.Hyperbloviate = require("./src/hyperbloviate");
+
+    exports.Hyperbloviate = require("./compiled/hyperbloviate");
     exports.JsonRpcServer = require("./src/jsonRpcServer.js");
     exports.WebviewControl = require("./src/webview");
 }

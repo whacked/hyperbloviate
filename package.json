@@ -21,6 +21,7 @@
     "multitransport-jsonrpc": "^0.9.4",
     "nedb": "^1.8.0",
     "sibilant": "^0.5.5"
+    "shadow-cljs": "^2.10.14",
   },
   "name": "hyperbloviate",
   "version": "0.0.1",
